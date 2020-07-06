@@ -1,0 +1,10 @@
+project Overkill is
+
+   for Main use ("overkill.adb");
+
+   -- GPS uses this to start the executable
+   for Exec_Dir use "bin";
+
+   for Source_Dirs use ("src");
+
+end Overkill;

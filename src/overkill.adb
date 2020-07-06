@@ -1,12 +1,14 @@
 with Classic;
 with Gui;
 use Gui;
-with w32;
 with Tray;
 with Menus;
 with Discovery;
 
-procedure Yummy is
+-- NOTE: Quick hack since this is the only platform supported for now.
+with w32;
+
+procedure Overkill is
 begin
    gui.gui := w32.w32_gui;
    gui.gui.init.all;
@@ -20,5 +22,5 @@ begin
    Tray.Quit;
    Classic.Quit;
    gui.gui.quit.all;
-end Yummy;
+end Overkill;
 
