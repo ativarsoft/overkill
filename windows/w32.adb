@@ -47,6 +47,9 @@ package body w32 is
    -- BitBlt
    SRCCOPY : constant := 16#00CC0020#;
    
+   -- RedrawWindow
+   RDW_INVALIDATE : constant := 16#1#;
+   
    --
    -- Types
    --
@@ -274,6 +277,14 @@ package body w32 is
    
    function DeleteDC(dc : HDC) return BOOL;
    pragma Import (Stdcall, DeleteDC, "DeleteDC");
+   
+   function RedrawWindow
+     (h : Window;
+      lprcUpdate : System.Address;
+      hrgnUpdate : System.Address;
+      flags : UINT)
+      return BOOL;
+   pragma Import (Stdcall, RedrawWindow, "RedrawWindow");
    
    function SetWindowLongPtrA(
                               win : HWND;
@@ -644,8 +655,9 @@ package body w32 is
    end W32_Move_Window;
    
    procedure W32_Redraw_Window(w : Window) is
+      r : BOOL;
    begin
-      null;
+      r := RedrawWindow (w, Null_Address, Null_Address, RDW_INVALIDATE);
    end W32_Redraw_Window;
    
    procedure W32_Set_Topmost(w : Window) is

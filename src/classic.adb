@@ -762,7 +762,8 @@ package body Classic is
                                    X, Y : Integer
                               ) is
    begin
-      null;
+      Capture_Mouse (win, wid);
+      gui.gui.redraw_window (win);
    end Button_Mouse_Down;
 
    procedure Button_Mouse_Up(
@@ -771,7 +772,16 @@ package body Classic is
                                    X, Y : Integer
                             ) is
    begin
-      null;
+      if Capture = wid then
+         Release_Mouse;
+         gui.gui.redraw_window (win);
+         if X > wid.r (1) and X < wid.r (1) + wid.r (3) and
+           Y > wid.r (2) and Y < wid.r (2) + wid.r (4) then
+            if wid.button_action /= null then
+               wid.button_action.all;
+            end if;
+         end if;
+      end if;
    end Button_Mouse_Up;
 
    procedure Button_Mouse_Move(
@@ -796,22 +806,31 @@ package body Classic is
       Draw_Pixmap_Double(subbmp, r(1), r(2), r(3), r(4));
    end Button_Draw;
 
-   procedure Checkbox_Mouse_Down(
-                                wid : access Widget;
-                                   win : Window;
-                                 X, Y : Integer
-                                ) is
+   procedure Checkbox_Mouse_Down
+     (wid : access Widget;
+      win : Window;
+      X, Y : Integer) is
    begin
-      null;
+      Capture_Mouse (win, wid);
+      gui.gui.redraw_window (win);
    end Checkbox_Mouse_Down;
 
-   procedure Checkbox_Mouse_Up(
-                               wid : access Widget;
-                                   win : Window;
-                                   X, Y : Integer
-                              ) is
+   procedure Checkbox_Mouse_Up
+     (wid : access Widget;
+      win : Window;
+      X, Y : Integer) is
    begin
-      null;
+      if Capture = wid then
+         Release_Mouse;
+         gui.gui.redraw_window (win);
+         if X > wid.r (1) and X < wid.r (1) + wid.r (3) and
+           Y > wid.r (2) and Y < wid.r (2) + wid.r (4) then
+            wid.checkbox_checked := not wid.checkbox_checked;
+            if wid.checkbox_action /= null then
+               wid.checkbox_action (wid.checkbox_checked);
+            end if;
+         end if;
+      end if;
    end Checkbox_Mouse_Up;
 
    procedure Checkbox_Mouse_Move(
@@ -846,31 +865,58 @@ package body Classic is
       Draw_Pixmap_Double(subbmp, r(1), r(2), r(3), r(4));
    end Checkbox_Draw;
 
-   procedure Slider_Mouse_Down(
-                               wid : access Widget;
-                                   win : Window;
-                                   X, Y : Integer
-                              ) is
+   procedure Slider_Mouse_Down
+     (wid : access Widget;
+      win : Window;
+      X, Y : Integer) is
    begin
-      null;
+      Capture_Mouse (win, wid);
+      Last_X := X;
+      Last_Y := Y;
+      gui.gui.Redraw_Window (win);
    end Slider_Mouse_Down;
 
-   procedure Slider_Mouse_Up(
-                             wid : access Widget;
-                                   win : Window;
-                                   X, Y : Integer
-                            ) is
+   procedure Slider_Mouse_Up
+     (wid : access Widget;
+      win : Window;
+      X, Y : Integer) is
    begin
-      null;
+      Release_Mouse;
+      gui.gui.Redraw_Window (win);
    end Slider_Mouse_Up;
 
-   procedure Slider_Mouse_Move(
-                               wid : access Widget;
-                                   win : Window;
-                               X, Y : Integer
-                              ) is
+   procedure Slider_Mouse_Move
+     (wid : access Widget;
+      win : Window;
+      X, Y : Integer)
+   is
+      Difference : Integer;
+      Value : Integer;
    begin
-      null;
+      Ada.Text_IO.Put_Line ("wid.slider_value " & wid.slider_value'Image);
+      if Capture = wid then
+         if wid.slider_horizontal = True then
+            Difference := X - Last_X;
+            Value := wid.slider_value + Difference;
+         else
+            Difference := Y - Last_Y;
+            Value := wid.slider_value - Difference;
+         end if;
+
+         if Value < wid.slider_min then
+            wid.slider_value := wid.slider_min;
+         elsif Value > wid.slider_max then
+            wid.slider_value := wid.slider_max;
+         else
+            Last_X := X;
+            Last_Y := Y;
+            wid.slider_value := Value;
+         end if;
+
+         Ada.Text_IO.Put_Line ("value: " & wid.slider_value'Image);
+
+         gui.gui.redraw_window (win);
+      end if;
    end Slider_Mouse_Move;
 
    procedure Slider_Draw(wid : access Widget; win : Window) is
@@ -878,7 +924,11 @@ package body Classic is
       bg, bar : access Subbitmap;
       n, slider_range : Natural;
    begin
+      Ada.Text_IO.Put_Line ("Slider_Draw: wid.slider_value: " & wid.slider_value'Image);
       r := wid.r;
+
+      -- select the background
+      -- there are 28 possible bg images
       if wid.slider_horizontal then
          slider_range := wid.slider_max - wid.slider_min;
          n := wid.slider_value * 28 / slider_range;
@@ -893,16 +943,19 @@ package body Classic is
          end if;
       end if;
       bg := wid.slider_background(n);
+
       if capture = wid then
          bar := wid.slider_down;
       else
          bar := wid.slider_up;
       end if;
+
       -- Draw the background
       Draw_Pixmap_Double(bg, r(1), r(2), r(3), r(4));
       -- Draw the bar
       if wid.slider_horizontal = True then
          Draw_Pixmap_Double(bar, r(1) + wid.slider_value + wid.slider_min, r(2) + 1, 14, 11);
+         null;
       else
          Draw_Pixmap_Double(bar, r(1) + 1, r(2) + r(4) - 13 + wid.slider_value, 11, 11);
       end if;
@@ -1377,6 +1430,7 @@ package body Classic is
          R := Temp(I).r;
          if X >= r(1) and Y >= r(2)
            and X <= (r(1) + r(3)) and Y < (r(2) + r(4)) then
+            Ada.Text_IO.Put_Line ("Collision with widget " & I'Image);
             wid := Temp(I);
             exit;
          end if;
@@ -1385,11 +1439,44 @@ package body Classic is
       return wid;
    end Collision_Detection;
 
-   procedure Template_Mouse_Move(
-                                 win : Window;
-                                 Temp : Template;
-                                 X, Y : Integer
-                                ) is
+   procedure Template_Mouse_Down
+     (win : Window;
+      Temp : Template;
+      X, Y : Integer)
+   is
+      wid : access Widget;
+      Num_Controls : Natural := Temp'Length;
+   begin
+      wid := Collision_Detection(X, Y, Temp, Num_Controls);
+      if wid /= null then
+         wid.control.mouse_down (wid, win, X, Y);
+      end if;
+   end Template_Mouse_Down;
+
+   procedure Template_Mouse_Up
+     (win : Window;
+      Temp : Template;
+      X, Y : Integer)
+   is
+      wid : access Widget;
+      Num_Controls : Natural := Temp'Length;
+   begin
+      if Capture /= null then
+         wid := Capture;
+      else
+         wid := Collision_Detection(X, Y, Temp, Num_Controls);
+      end if;
+
+      if wid /= null then
+         wid.control.mouse_up (wid, win, X, Y);
+      end if;
+   end Template_Mouse_Up;
+
+   procedure Template_Mouse_Move
+     (win : Window;
+      Temp : Template;
+      X, Y : Integer)
+   is
       wid : access Widget;
       Num_Controls : Natural := Temp'Length;
    begin
@@ -1424,11 +1511,14 @@ package body Classic is
       X2, Y2 : Integer;
    begin
       if double_size then
-         X2 := x / 2;
-         Y2 := y / 2;
+         X2 := X / 2;
+         Y2 := Y / 2;
+      else
+         X2 := X;
+         Y2 := Y;
       end if;
 
-      --Template_Mouse_Down();
+      Template_Mouse_Down(w1, main_template, X2, Y2);
    end Main_Mouse_Down;
 
    procedure Main_Mouse_Up(x, y : Integer)
@@ -1436,11 +1526,14 @@ package body Classic is
       X2, Y2 : Integer;
    begin
       if double_size then
-         X2 := x / 2;
-         Y2 := y / 2;
+         X2 := X / 2;
+         Y2 := Y / 2;
+      else
+         X2 := X;
+         Y2 := Y;
       end if;
 
-      --Template_Mouse_Up();
+      Template_Mouse_Up(w1, main_template, X2, Y2);
    end Main_Mouse_Up;
 
    procedure Main_Mouse_Move(x, y : Integer)
@@ -1450,8 +1543,10 @@ package body Classic is
       if double_size then
          X2 := x / 2;
          Y2 := y / 2;
+      else
+         X2 := X;
+         Y2 := Y;
       end if;
-
 
       Template_Mouse_Move(w1, main_template, X2, Y2);
    end Main_Mouse_Move;
