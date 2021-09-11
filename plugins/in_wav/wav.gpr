@@ -1,0 +1,8 @@
+library project Wav is
+    for Languages use ("Ada");
+    for Library_Name use "in_wav";
+    for Source_Dirs use ("src");
+    for Object_Dir use "obj";
+    for Library_Dir use "lib";
+    for Library_Kind use "Relocatable";
+end Wav;

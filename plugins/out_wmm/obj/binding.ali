@@ -1,0 +1,200 @@
+V "GNAT Lib v2017"
+A -gnatA
+A -mtune=generic
+A -march=pentium4
+P ZX
+
+RN
+RV NO_SECONDARY_STACK
+RV NO_STANDARD_STORAGE_POOLS
+RV NO_DYNAMIC_SIZED_OBJECTS
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_ELABORATION_CODE
+RV SPARK_05
+
+U binding%b		binding.adb		3057a2fa OO PK IL
+W interfaces%s		interfac.ads		interfac.ali
+W interfaces.c%s	i-c.adb			i-c.ali
+W interfaces.c.strings%s  i-cstrin.adb		i-cstrin.ali
+W out_plugin%s		out_plugin.ads		out_plugin.ali
+W out_wmm%s		out_wmm.adb		out_wmm.ali
+
+U binding%s		binding.ads		a666799b EE NE OO PK IL
+W interfaces%s		interfac.ads		interfac.ali
+W interfaces.c%s	i-c.adb			i-c.ali
+W interfaces.c.strings%s  i-cstrin.adb		i-cstrin.ali
+W out_plugin%s		out_plugin.ads		out_plugin.ali
+
+D ada.ads		20170516105950 76789da1 ada%s
+D a-unccon.ads		20170516105954 31484697 ada.unchecked_conversion%s
+D binding.ads		20200107201948 76328949 binding%s
+D binding.adb		20200107205222 7f9a1df6 binding%b
+D interfac.ads		20170516105950 5ab55268 interfaces%s
+D i-c.ads		20170516105948 5421119b interfaces.c%s
+D i-cstrin.ads		20170516105952 341d0ddf interfaces.c.strings%s
+D out_plugin.ads	20200105185842 b068ec96 out_plugin%s
+D out_wmm.ads		20200105183244 e9abc697 out_wmm%s
+D system.ads		20170516105954 32a08138 system%s
+D s-exctab.ads		20170516105954 54135002 system.exception_table%s
+D s-parame.ads		20170516105954 7e2a0d7f system.parameters%s
+D s-stalib.ads		20170516105954 09bd3940 system.standard_library%s
+X 3 binding.ads
+5K9*binding 97l5 97e12 4|10b14 153l5 153t12
+7R9*Null_Record 8r28 14r28
+8P9*Void_Ptr(7R9) 33r18
+9M9*WORD<6|44M9> 37r20 38r19 41r21 42r24 43r16
+10M9*DWORD<6|45M9> 22r25 27r24 28r25 29r23 30r17 31r17 39r24 40r25 66r45
+. 67r45 68r34 93r41
+11M9*UINT<6|43M9> 13r25 50r43 58r33 64r37 75r41 87r33
+12P9*LPSTR<7|47P9> 49r43 56r34 57r37
+13M9*MMRESULT<11M9> 21r32 48r44 51r41 69r33 76r42 81r34 88r34 94r38
+14P9*HWAVEOUT(7R9) 63r39 73r40 80r32 85r32 92r36
+17V13*winampGetOutModule{8|42R9} 18i28 4|148b13 151l8 151t26
+21m4*MMSYSERR_NOERROR{13M9}
+22m4*WHDR_DONE{10M9}
+25R9*WAVEHDR 34e14
+26p7*lpData(string)
+27m7*dwBufferLength{10M9}
+28m7*dwBytesRecorded{10M9}
+29p7*dwUser(10M9)
+30m7*dwFlags{10M9}
+31m7*dwLoops{10M9}
+32p7*lpNext
+33p7*reserved{8P9}
+36R9*WAVEFORMATEX 44e14 65r39
+37m7*wFormatTag{9M9}
+38m7*nChannels{9M9}
+39m7*nSamplesPerSec{10M9}
+40m7*nAvgBytesPerSec{10M9}
+41m7*nBlockAlign{9M9}
+42m7*wBitsPerSample{9M9}
+43m7*cbSize{9M9}
+47V13*waveOutGetErrorText{13M9} 48>33 49>33 50>33 52b28
+48m33 mmrError{13M9}
+49p33 pszText{12P9}
+50m33 cchText{11M9}
+54V13*MessageBoxA{6|35I9} 55>25 56>25 57>25 58>25 60b28
+55p25 win{8|9P9}
+56p25 lpText{12P9}
+57p25 lpCaption{12P9}
+58m25 uType{11M9}
+62V13*waveOutOpen{13M9} 63^25 64>25 65^25 66^25 67^25 68>25 70b28
+63p25 phwo(14P9)
+64m25 uDeviceID{11M9}
+65p25 pwfx(36R9)
+66p25 dwCallback(10M9)
+67p25 dwInstance(10M9)
+68m25 fdOpen{10M9}
+72V13*waveOutPrepareHeader{13M9} 73>34 74^34 75>34 77b28
+73p34 hwo{14P9}
+74p34 pwh(25R9)
+75m34 cbwh{11M9}
+79V13*waveOutClose{13M9} 80>26 82b28
+80p26 hwo{14P9}
+84V13*waveOutWrite{13M9} 85>26 86^26 87>26 89b28
+85p26 hwo{14P9}
+86p26 pwh(25R9)
+87m26 cbwh{11M9}
+91V13*waveOutSetVolume{13M9} 92>30 93>30 95b28
+92p30 hwo{14P9}
+93m30 dwVolume{10M9}
+X 4 binding.adb
+13U14 Configure 13>24 14r32 45b14 48l8 48t17 131r42
+13p24 parent{8|9P9} 45b24 47r21
+15U14 About 15>20 16r32 50b14 53l8 53t13 132r38
+15p20 parent{8|9P9} 50b20 52r17
+17U14 Init 18r32 55b14 58l8 58t12 133r37
+19U14 Quit 20r32 60b14 63l8 63t12 134r37
+21V13 Open{6|35I9} 21>18 21>30 21>46 21>58 21>67 22r32 65b13 70l8 70t12 135r37
+21i18 rate{6|35I9} 65b18 68r29
+21i30 channels{6|35I9} 65b30 68r44
+21i46 bits{6|35I9} 65b46 68r63
+21i58 a{6|35I9} 65b58 68r78
+21i67 b{6|35I9} 65b67 68r90
+23U14 Close 24r32 72b14 75l8 75t13 136r38
+26V13 Write{6|35I9} 26>19 26>47 27r32 77b13 85l8 85t13 137r38
+26p19 buffer{7|39P9} 77b19 82r14
+26i47 length{6|35I9} 77b47 78r39 83r42
+28V13 Can_Write{6|35I9} 29r32 87b13 90l8 90t17 138r42
+30V13 Is_Playing{6|35I9} 31r32 92b13 95l8 95t18 139r43
+32V13 Pause{6|35I9} 33r32 97b13 100l8 100t13 140r38
+34U14 Set_Volume 34>25 35r32 102b14 105l8 105t18 141r43
+34i25 volume{6|35I9} 102b25
+36U14 Set_Panning 36>26 37r32 107b14 110l8 110t19 142r44
+36i26 pan{6|35I9} 107b26
+38U14 Flush 39r32 112b14 115l8 115t13 143r38
+40V13 Get_Output_Time{6|35I9} 41r32 117b13 120l8 120t23 144r48
+42V13 Get_Written_Time{6|35I9} 43r32 122b13 125l8 125t24 145r49
+66i7 r{integer} 68m7 69r18
+78i7 ada_length{natural} 79r30 82m38
+79a7 ada_buffer{string} 82m26 83r22
+80i7 r{integer} 83m7 84r18
+127r4 out_wmm{8|42R9} 150r14
+X 5 interfac.ads
+38K9*Interfaces 3|1r6 2r6 9r21 10r22 11r21 12r22 59r33 4|1r6 2r5 3r6 4r5
+. 129r44 5|184e15
+X 6 i-c.ads
+18K20*C 3|1w17 2r17 9r32 10r33 11r32 12r33 59r44 4|1w17 2r16 3r17 4r16 129r55
+. 6|230e17
+35I9*int<integer> 3|59r46 4|21r25 21r41 21r53 21r62 21r71 21r83 26r56 26r68
+. 28r30 30r31 32r26 34r34 36r32 40r36 42r37 65r25 65r41 65r53 65r62 65r71
+. 65r83 69r14 77r56 77r68 84r14 87r30 92r31 97r26 102r34 107r32 117r36 122r37
+43M9*unsigned 3|11r34
+44M9*unsigned_short 3|9r34
+45M9*unsigned_long 3|10r35
+72E9*char<character>
+79A9*char_array(72E9)<60M9>
+84V13*To_C{79A9} 4|129s80
+98U14*To_Ada 4|82s7
+X 7 i-cstrin.ads
+36K22*Strings 3|2w19 12r35 4|3w19 4r18 129r57 7|106e25
+39P9*char_array_access(6|79A9) 4|26r28 77r28
+47P9*chars_ptr 3|12r43
+58V13*New_Char_Array{47P9} 4|129s65
+X 8 out_plugin.ads
+6K9*out_plugin 3|3w6 17r39 55r31 4|5w6 6r5 127r14 148r39 8|65e15
+8R9*Null_Record
+9P9*Window(8R9) 3|55r42 4|13r33 15r29 45r33 50r29
+11P9*Out_Configure_Func
+13P9*Out_About_Func
+15P9*Out_Init_Func
+17P9*Out_Quit_Func
+19P9*Out_Open_Func(6|35I9)
+21P9*Out_Close_Func
+23P9*Out_Write_Func(6|35I9)
+25P9*Out_Can_Write_Func(6|35I9)
+27P9*Out_Is_Playing_Func(6|35I9)
+29P9*Out_Pause_Func(6|35I9)
+31P9*Out_Set_Volume_Func
+33P9*Out_Set_Panning_Func
+35P9*Out_Flush_Func
+37P9*Out_Get_Output_Time_Func(6|35I9)
+39P9*Out_Get_Written_Time_Func(6|35I9)
+42R9*Out_Plugin 3|17r50 4|127r25 148r50 8|61e14
+43i7*Version{6|35I9} 4|128m29
+44p7*Description{7|47P9} 4|129m29
+45i7*Id{6|35I9} 4|130m29
+46p7*Configure{11P9} 4|131m29
+47p7*About{13P9} 4|132m29
+48p7*Init{15P9} 4|133m29
+49p7*Quit{17P9} 4|134m29
+50p7*Open{19P9} 4|135m29
+51p7*Close{21P9} 4|136m29
+52p7*Write{23P9} 4|137m29
+53p7*Can_Write{25P9} 4|138m29
+54p7*Is_Playing{27P9} 4|139m29
+55p7*Pause{29P9} 4|140m29
+56p7*Set_Volume{31P9} 4|141m29
+57p7*Set_Panning{33P9} 4|142m29
+58p7*Flush{35P9} 4|143m29
+59p7*Get_Output_Time{37P9} 4|144m29
+60p7*Get_Written_Time{39P9} 4|145m29
+X 9 out_wmm.ads
+6K9*out_wmm 4|7w6 8r5 9|27e12
+11U14*WMM_Configure 4|47s7
+12U14*WMM_About 4|52s7
+13U14*WMM_Init 4|57s7
+14U14*WMM_Quit 4|62s7
+15V13*WMM_Open{integer} 4|68s12
+17V13*WMM_Write{integer} 4|83s12
+

@@ -1,0 +1,80 @@
+V "GNAT Lib v2017"
+A -gnatA
+A -mtune=generic
+A -march=pentium4
+P ZX
+
+RN
+RV NO_EXCEPTION_HANDLERS
+RV NO_EXCEPTIONS
+RV NO_IO
+RV NO_STREAMS
+RV NO_DEFAULT_INITIALIZATION
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U wav%b			wav.adb			1b12fca0 NE OO PK IU
+W ada%s			ada.ads			ada.ali
+W ada.streams%s		a-stream.adb		a-stream.ali
+W ada.streams.stream_io%s  a-ststio.adb		a-ststio.ali
+W interfaces%s		interfac.ads		interfac.ali
+W system.stream_attributes%s  s-stratt.adb	s-stratt.ali
+W system.strings.stream_ops%s  s-ststop.adb	s-ststop.ali
+
+U wav%s			wav.ads			18369b2b EE NE OO PK IU
+
+D ada.ads		20170516105950 76789da1 ada%s
+D a-except.ads		20170516105952 291912d5 ada.exceptions%s
+D a-ioexce.ads		20170516105948 e4a01f64 ada.io_exceptions%s
+D a-stream.ads		20170516105952 119b8fb3 ada.streams%s
+D a-ststio.ads		20170516105952 c3455b31 ada.streams.stream_io%s
+D a-tags.ads		20170516105954 d3a89129 ada.tags%s
+D a-unccon.ads		20170516105954 31484697 ada.unchecked_conversion%s
+D a-uncdea.ads		20170516105954 f15a5ed1 ada.unchecked_deallocation%s
+D interfac.ads		20170516105950 5ab55268 interfaces%s
+D i-cstrea.ads		20170516105950 e53d8b8e interfaces.c_streams%s
+D system.ads		20170516105954 32a08138 system%s
+D s-crtl.ads		20170516105948 0ebbdb71 system.crtl%s
+D s-exctab.ads		20170516105954 54135002 system.exception_table%s
+D s-ficobl.ads		20170516105956 078245e4 system.file_control_block%s
+D s-parame.ads		20170516105954 7e2a0d7f system.parameters%s
+D s-soflin.ads		20170516105950 14e1eb6c system.soft_links%s
+D s-stache.ads		20170516105954 a37c21ec system.stack_checking%s
+D s-stalib.ads		20170516105954 09bd3940 system.standard_library%s
+D s-stoele.ads		20170516105956 2dc34a04 system.storage_elements%s
+D s-stratt.ads		20170516105948 aedef97e system.stream_attributes%s
+D s-string.ads		20170516105954 8fe54fb7 system.strings%s
+D s-ststop.ads		20170516105950 e6693757 system.strings.stream_ops%s
+D s-traent.ads		20170516105950 005bf670 system.traceback_entries%s
+D s-unstyp.ads		20170516105952 34867c83 system.unsigned_types%s
+D wav.ads		20200707183618 18369b2b wav%s
+D wav.adb		20200707192752 9ad46ed2 wav%b
+X 1 ada.ads
+16K9*Ada 20e8 26|1r6 2r5
+X 4 a-stream.ads
+36K13*Streams 87e16 26|1r10 2r9
+X 5 a-ststio.ads
+39K21*Stream_IO 223e26 26|1w18 2r17
+42P9*Stream_Access(4|39R9)
+44P9*File_Type 26|9r14
+46n23*In_File{46E9} 26|16r18
+73U14*Open 26|14s7
+74p7 File{44P9} 26|15r10
+75e7 Mode{46E9} 26|16r10
+76a7 Name{string} 26|17r10
+79U14*Close 26|27s7 31s13
+88V13*Is_Open{boolean} 26|30s13
+91V13*Stream{42P9} 26|18s20 22s25 23s20
+142X4*End_Error 26|29r12
+X 9 interfac.ads
+38K9*Interfaces 184e15 26|3w6 4r5
+74M9*Unsigned_32 26|11r16 22r7
+X 25 wav.ads
+1K9*WAV 5l5 5e8 26|6b14 35l5 35t8
+3U14*Decode 26|8b14 33l8 33t14
+X 26 wav.adb
+9p7 File{5|44P9} 15m18 15r18 18r28 22r33 23r28 27m14 27r14 30r22 31m20 31r20
+10a7 ckID{string} 18m35 18r35 19r10
+11m7 cksize{9|74M9} 22m40 22r40
+12a7 WAVEID{string} 23m35 23r35 24r10
+

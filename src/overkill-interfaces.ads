@@ -1,0 +1,8 @@
+package Overkill.Interfaces is
+
+   type Tray_Interface is limited interface;
+
+   procedure Show (Tray : in out Tray_Interface) is abstract;
+   procedure Hide (Tray : in out Tray_Interface) is abstract;
+
+end Overkill.Interfaces;

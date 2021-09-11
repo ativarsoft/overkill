@@ -1,4 +1,4 @@
-package body Menus is
+package body Overkill.Menus is
 
    procedure Init is
    begin
@@ -10,4 +10,4 @@ package body Menus is
       null;
    end Quit;
 
-end Menus;
+end Overkill.Menus;

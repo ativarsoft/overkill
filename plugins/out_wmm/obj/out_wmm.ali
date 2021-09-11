@@ -1,0 +1,67 @@
+V "GNAT Lib v2017"
+A -gnatA
+A -mtune=generic
+A -march=pentium4
+P ZX
+
+RN
+RV NO_DYNAMIC_SIZED_OBJECTS
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U out_wmm%b		out_wmm.adb		b4b982b4 NE OO PK IL
+W out_plugin%s		out_plugin.ads		out_plugin.ali
+
+U out_wmm%s		out_wmm.ads		2ff1a348 EE NE OO PK IL
+W binding%s		binding.adb		binding.ali
+W out_plugin%s		out_plugin.ads		out_plugin.ali
+
+D ada.ads		20170516105950 76789da1 ada%s
+D a-unccon.ads		20170516105954 31484697 ada.unchecked_conversion%s
+D binding.ads		20200107201948 76328949 binding%s
+D interfac.ads		20170516105950 5ab55268 interfaces%s
+D i-c.ads		20170516105948 5421119b interfaces.c%s
+D i-cstrin.ads		20170516105952 341d0ddf interfaces.c.strings%s
+D out_plugin.ads	20200105185842 b068ec96 out_plugin%s
+D out_wmm.ads		20200105183244 e9abc697 out_wmm%s
+D out_wmm.adb		20200105183400 ed7aa8b5 out_wmm%b
+D system.ads		20170516105954 32a08138 system%s
+D s-exctab.ads		20170516105954 54135002 system.exception_table%s
+D s-parame.ads		20170516105954 7e2a0d7f system.parameters%s
+D s-stalib.ads		20170516105954 09bd3940 system.standard_library%s
+X 3 binding.ads
+5K9*binding 97e12 8|1w6 2r5
+17V13*winampGetOutModule{7|42R9} 18i28
+X 7 out_plugin.ads
+6K9*out_plugin 65e15 8|3w6 4r5 9|1w6 2r5
+8R9*Null_Record
+9P9*Window(8R9) 8|11r37 12r33 9|6r37 11r33
+X 8 out_wmm.ads
+6K9*out_wmm 27l5 27e12 9|4b14 81l5 81t12
+11U14*WMM_Configure 11>28 9|6b14 9l8 9t21
+11p28 parent{7|9P9} 9|6b28
+12U14*WMM_About 12>24 9|11b14 14l8 14t17
+12p24 parent{7|9P9} 9|11b24
+13U14*WMM_Init 9|16b14 19l8 19t16
+14U14*WMM_Quit 9|21b14 24l8 24t16
+15V13*WMM_Open{integer} 15>22 15>38 15>58 15>74 15>87 9|26b13 29l8 29t16
+15i22 rate{integer} 9|26b22
+15i38 channels{integer} 9|26b38
+15i58 bits{integer} 9|26b58
+15i74 a{integer} 9|26b74
+15i87 b{integer} 9|26b87
+16U14*WMM_Close 9|31b14 34l8 34t17
+17V13*WMM_Write{integer} 17>23 17>40 9|36b13 39l8 39t17
+17a23 buffer{string} 9|36b23
+17i40 length{integer} 9|36b40
+18V13*WMM_Can_Write{integer} 9|41b13 44l8 44t21
+19V13*WMM_Is_Playing{integer} 9|46b13 49l8 49t22
+20V13*WMM_Pause{integer} 9|51b13 54l8 54t17
+21U14*WMM_Set_Volume 21>29 9|56b14 59l8 59t22
+21i29 volume{integer} 9|56b29
+22U14*WMM_Set_Panning 22>30 9|61b14 64l8 64t23
+22i30 pan{integer} 9|61b30
+23U14*WMM_Flush 9|66b14 69l8 69t17
+24V13*WMM_Get_Output_Time{integer} 9|71b13 74l8 74t27
+25V13*WMM_Get_Written_Time{integer} 9|76b13 79l8 79t28
+

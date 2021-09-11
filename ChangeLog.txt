@@ -1,0 +1,6 @@
+2020-08-15
+  * Added tray icon
+
+2021-09-11
+  * fixed window move
+  * replaced Ada.Text_IO.Put_Line for Debug.Put_Line to make the program work without a console

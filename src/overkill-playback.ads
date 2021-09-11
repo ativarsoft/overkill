@@ -1,4 +1,4 @@
-package Playback is
+package Overkill.Playback is
 
    procedure Previous;
    procedure Play;
@@ -6,4 +6,4 @@ package Playback is
    procedure Stop;
    procedure Next;
 
-end Playback;
+end Overkill.Playback;

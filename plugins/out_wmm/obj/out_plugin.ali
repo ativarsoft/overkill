@@ -1,0 +1,90 @@
+V "GNAT Lib v2017"
+A -gnatA
+A -mtune=generic
+A -march=pentium4
+P ZX
+
+RN
+RV NO_ACCESS_SUBPROGRAMS
+RV NO_STANDARD_STORAGE_POOLS
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U out_plugin%s		out_plugin.ads		d054f0d2 NE OO PK IL
+W interfaces%s		interfac.ads		interfac.ali
+W interfaces.c%s	i-c.adb			i-c.ali
+W interfaces.c.strings%s  i-cstrin.adb		i-cstrin.ali
+
+D ada.ads		20170516105950 76789da1 ada%s
+D a-unccon.ads		20170516105954 31484697 ada.unchecked_conversion%s
+D interfac.ads		20170516105950 5ab55268 interfaces%s
+D i-c.ads		20170516105948 5421119b interfaces.c%s
+D i-cstrin.ads		20170516105952 341d0ddf interfaces.c.strings%s
+D out_plugin.ads	20200105185842 b068ec96 out_plugin%s
+D system.ads		20170516105954 32a08138 system%s
+D s-exctab.ads		20170516105954 54135002 system.exception_table%s
+D s-parame.ads		20170516105954 7e2a0d7f system.parameters%s
+D s-stalib.ads		20170516105954 09bd3940 system.standard_library%s
+X 3 interfac.ads
+38K9*Interfaces 184e15 6|1r6 2r5 3r6 4r5
+X 4 i-c.ads
+18K20*C 230e17 6|1w17 2r16 3r17 4r16
+35I9*int<integer> 6|19r50 19r66 19r78 19r87 19r96 19r108 23r81 23r93 25r54
+. 27r55 29r50 31r59 33r57 37r60 39r61 43r17 45r12
+72E9*char<character>
+79A9*char_array(72E9)<60M9>
+X 5 i-cstrin.ads
+36K22*Strings 106e25 6|3w19 4r18
+39P9*char_array_access(4|79A9) 6|23r53
+47P9*chars_ptr 6|44r21
+X 6 out_plugin.ads
+6K9*out_plugin 65l5 65e15
+8R9*Null_Record 9r26
+9P9*Window(8R9) 11r58 13r54
+11P9*Out_Configure_Func 11>49 12r32 46r19
+11p49 parent{9P9}
+13P9*Out_About_Func 13>45 14r32 47r15
+13p45 parent{9P9}
+15P9*Out_Init_Func 16r32 48r14
+17P9*Out_Quit_Func 18r32 49r14
+19P9*Out_Open_Func(4|35I9) 19>43 19>55 19>71 19>83 19>92 20r32 50r14
+19i43 rate{4|35I9}
+19i55 channels{4|35I9}
+19i71 bits{4|35I9}
+19i83 a{4|35I9}
+19i92 b{4|35I9}
+21P9*Out_Close_Func 22r32 51r15
+23P9*Out_Write_Func(4|35I9) 23>44 23>72 24r32 52r15
+23p44 buffer{5|39P9}
+23i72 length{4|35I9}
+25P9*Out_Can_Write_Func(4|35I9) 26r32 53r19
+27P9*Out_Is_Playing_Func(4|35I9) 28r32 54r20
+29P9*Out_Pause_Func(4|35I9) 30r32 55r15
+31P9*Out_Set_Volume_Func 31>50 32r32 56r20
+31i50 volume{4|35I9}
+33P9*Out_Set_Panning_Func 33>51 34r32 57r21
+33i51 pan{4|35I9}
+35P9*Out_Flush_Func 36r32 58r15
+37P9*Out_Get_Output_Time_Func(4|35I9) 38r32 59r25
+39P9*Out_Get_Written_Time_Func(4|35I9) 40r32 60r26
+42R9*Out_Plugin 61e14 63r55
+43i7*Version{4|35I9}
+44p7*Description{5|47P9}
+45i7*Id{4|35I9}
+46p7*Configure{11P9}
+47p7*About{13P9}
+48p7*Init{15P9}
+49p7*Quit{17P9}
+50p7*Open{19P9}
+51p7*Close{21P9}
+52p7*Write{23P9}
+53p7*Can_Write{25P9}
+54p7*Is_Playing{27P9}
+55p7*Pause{29P9}
+56p7*Set_Volume{31P9}
+57p7*Set_Panning{33P9}
+58p7*Flush{35P9}
+59p7*Get_Output_Time{37P9}
+60p7*Get_Written_Time{39P9}
+63P9*Get_Out_Module_Func(42R9)
+

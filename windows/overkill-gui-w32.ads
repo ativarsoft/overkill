@@ -1,44 +1,44 @@
-with Gui;
-use Gui;
+with Overkill.Gui;
+use Overkill.Gui;
 
-package w32 is
+package Overkill.Gui.W32 is
 
    procedure W32_Init;
    procedure W32_Quit;
 
-   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : access Skin_Callbacks) return Window;
-   procedure W32_Destroy_Window(w : Window);
+   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : access Skin_Callbacks) return Window_Type;
+   procedure W32_Destroy_Window(w : Window_Type);
    procedure W32_Event_Handler;
-   procedure W32_Show_Window(w : Window);
-   procedure W32_Hide_Window(w : Window);
-   procedure W32_Move_Window(w : Window; x : Integer; y : Integer);
-   procedure W32_Redraw_Window(w : Window);
-   procedure W32_Set_Topmost(w : Window);
-   procedure W32_Set_Not_Topmost(w : Window);
-   procedure W32_Resize_Window(w : Window; width : Integer; height : Integer);
+   procedure W32_Show_Window(w : Window_Type);
+   procedure W32_Hide_Window(w : Window_Type);
+   procedure W32_Move_Window(w : Window_Type; x : Integer; y : Integer);
+   procedure W32_Redraw_Window(w : Window_Type);
+   procedure W32_Set_Topmost(w : Window_Type);
+   procedure W32_Set_Not_Topmost(w : Window_Type);
+   procedure W32_Resize_Window(w : Window_Type; width : Integer; height : Integer);
    procedure W32_Get_Window_Rect(rect : Color);
-   procedure W32_Minimize_Window(w : Window);
+   procedure W32_Minimize_Window(w : Window_Type);
 
    function W32_Load_Image(filename : String) return Pixmap;
    procedure W32_Unload_Image(image : Pixmap);
-   procedure W32_Begin_Drawing(w : Window);
+   procedure W32_Begin_Drawing(w : Window_Type);
    procedure W32_Draw_Image(p : Pixmap; dst_x : Integer; dst_y : Integer; w : Integer; h : Integer; src_x : Integer; src_y : Integer);
    procedure W32_Draw_Image_Double(p : Pixmap; dst_x : Integer; dst_y : Integer; w : Integer; h : Integer; src_x : Integer; src_y : Integer);
    procedure W32_Draw_Filled_Rectangle(x : Integer; y : Integer; w : Integer; h : Integer; c : Color);
    procedure W32_End_Drawing;
 
-   procedure W32_Capture_Mouse(w : Window);
+   procedure W32_Capture_Mouse(w : Window_Type);
    procedure W32_Release_Mouse;
    function W32_Load_Cursor(filename : String) return Cursor;
    procedure W32_Unload_Cursor(p : Cursor);
    procedure W32_Set_Cursor(p : Cursor);
 
-   function W32_Check_Glue(a : Window; b : Window; x : Integer; y : Integer) return Boolean;
+   function W32_Check_Glue(a : Window_Type; b : Window_Type; x : Integer; y : Integer) return Boolean;
 
    procedure W32_Open_File_Dialog;
    procedure W32_Open_Dir_Dialog;
 
-   w32_gui : gui.Gui_Dispatch := (
+   w32_gui : Overkill.Gui.Gui_Dispatch := (
                                   init => W32_Init'Access,
                                   quit => W32_Quit'Access,
 
@@ -75,4 +75,4 @@ package w32 is
                                   open_dir_dialog => W32_Open_Dir_Dialog'Access
                                  );
 
-end w32;
+end Overkill.Gui.W32;

@@ -8,11 +8,13 @@ with Ada.Unchecked_Conversion;
 with System;
 use System;
 with System.Address_Image;
-with Ada.Text_IO;
-use Ada.Text_IO;
+with Overkill.Debug;
+use Overkill.Debug;
 with Interfaces.C.Strings;
+with Overkill.Platform;
+use Overkill.Platform;
 
-package body w32 is
+package body Overkill.Gui.W32 is
    
    --
    -- Constants
@@ -30,6 +32,7 @@ package body w32 is
    
    -- Window messages
    WM_CLOSE : constant := 16#0010#;
+   WM_DESTROY : constant := 16#0002#;
    WM_ERASEBKGND : constant := 16#0014#;
    WM_SETCURSOR : constant := 16#0020#;
    WM_PAINT : constant := 16#000F#;
@@ -50,16 +53,19 @@ package body w32 is
    -- RedrawWindow
    RDW_INVALIDATE : constant := 16#1#;
    
+   SWP_NOSIZE : constant := 16#0001#;
+   SWP_NOZORDER : constant := 16#0004#;
+   
    --
    -- Types
    --
-   type Null_Record is null record;
    
    type HANDLE is new System.Address;
-   type HWND is new System.Address;
+   type HWND is new Window_Type;
    type LPCSTR is new System.Address;
    type HMENU is new System.Address;
    type HINSTANCE is new System.Address;
+   type HINSTANCE2 is access all Null_Record;
    type LPVOID is new System.Address;
    type DWORD is new Interfaces.C.unsigned;
    type BOOL is new Interfaces.C.int;
@@ -67,8 +73,8 @@ package body w32 is
    type ATOM is new System.Address;
    type WNDPROC is new System.Address;
    type HICON is new System.Address;
-   type HCURSOR is access all gui.Null_Record;
-   type HBITMAP is access gui.Null_Record;
+   type HCURSOR is access all Null_Record;
+   type HBITMAP is access Null_Record;
    type HBRUSH is new System.Address;
    type HMODULE is new System.Address;
    type LRESULT is new Interfaces.C.unsigned;
@@ -76,7 +82,7 @@ package body w32 is
    type LPARAM is new Interfaces.C.unsigned;
    type LPMSG is new System.Address;
    type HDC is new System.Address;
-   type HGDIOBJ is access all gui.Null_Record;
+   type HGDIOBJ is access all Null_Record;
    type LONG_PTR is access Null_Record;
    
    --
@@ -176,8 +182,8 @@ package body w32 is
    
    IDC_ARROW : constant := 32512;
    
-   function HWND_To_Window is new Ada.Unchecked_Conversion(HWND, Window);
-   function Window_To_HWND is new Ada.Unchecked_Conversion(Window, HWND);
+   --function HWND_To_Window is new Ada.Unchecked_Conversion(HWND, Window);
+   --function Window_To_HWND is new Ada.Unchecked_Conversion(Window, HWND);
    function MAKEINTRESOURCE is new Ada.Unchecked_Conversion(System.Address, LPCSTR);
    
    function HANDLE_To_Pixmap is new Ada.Unchecked_Conversion(HANDLE, Pixmap);
@@ -188,10 +194,16 @@ package body w32 is
    function GetModuleHandleA(lpModuleName : LPCSTR) return HMODULE;
    pragma Import (Stdcall, GetModuleHandleA, "GetModuleHandleA");
    
-   function LoadIconA(
-                     instance : HINSTANCE;
-                     lpIconName : LPCSTR
-                    ) return HICON;
+   function LoadIconA
+     (instance : HINSTANCE;
+      lpIconName : LPCSTR)
+      return HICON;
+   
+   function LoadIconA
+     (instance : HINSTANCE2;
+      lpIconName : size_t)
+      return HICON;
+   
    pragma Import (Stdcall, LoadIconA, "LoadIconA");
    
    function LoadCursorA(
@@ -279,34 +291,48 @@ package body w32 is
    pragma Import (Stdcall, DeleteDC, "DeleteDC");
    
    function RedrawWindow
-     (h : Window;
+     (h : Window_Type;
       lprcUpdate : System.Address;
       hrgnUpdate : System.Address;
       flags : UINT)
       return BOOL;
    pragma Import (Stdcall, RedrawWindow, "RedrawWindow");
    
-   function SetWindowLongPtrA(
-                              win : HWND;
-                              nIndex : Interfaces.C.int;
-                              dwNewLong : access Skin_Callbacks
-                             ) return LONG_PTR;
-   pragma Import (Stdcall, SetWindowLongPtrA, "SetWindowLongPtrA");
+   function SetWindowLongPtrA
+     (win : HWND;
+      nIndex : Interfaces.C.int;
+      dwNewLong : access Skin_Callbacks)
+      return LONG_PTR;
+   pragma Import (Stdcall, SetWindowLongPtrA, "SetWindowLongA");
    
-   function GetWindowLongPtrA(
-                              window : HWND;
-                              nIndex : Interfaces.C.int
-                             ) return access Skin_Callbacks;
-   pragma Import (Stdcall, GetWindowLongPtrA, "GetWindowLongPtrA");
+   function GetWindowLongPtrA
+     (window : HWND;
+      nIndex : Interfaces.C.int)
+      return access Skin_Callbacks;
+   pragma Import (Stdcall, GetWindowLongPtrA, "GetWindowLongA");
    
    function GET_X_LPARAM(l : LPARAM) return Integer is
+      Value : LPARAM := l and 16#FFFF#;
+      Ret : Integer;
    begin
-      return Integer(l and 16#FFFF#);
+      if (Value and 16#8000#) = 0 then
+         Ret := Integer (Value);
+      else
+         Ret := - Integer ((not Value) and 16#7FFF#);
+      end if;
+      return Ret;
    end GET_X_LPARAM;
    
    function GET_Y_LPARAM(l : LPARAM) return Integer is
+      Value : LPARAM := LPARAM (Interfaces.Shift_Right(Unsigned_32 (l), 16));
+      Ret : Integer;
    begin
-      return Integer(Interfaces.Shift_Right(Interfaces.Unsigned_32(l and 16#FFFF0000#), 16));
+      if (Value and 16#8000#) = 0 then
+         Ret := Integer (Value);
+      else
+         Ret := - Integer ((not Value) and 16#7FFF#);
+      end if;
+      return Ret;
    end GET_Y_LPARAM;
    
    function LOWORD(v : DWORD) return Integer is
@@ -331,10 +357,10 @@ package body w32 is
                     ) return BOOL;
    pragma Import (Stdcall, EndPaint, "EndPaint");
    
-   function GetWindowRect(
-                          win : HWND;
-                          lpRect : out RECT
-                         ) return BOOL;
+   function GetWindowRect
+     (win : HWND;
+      lpRect : out RECT)
+      return BOOL;
    pragma Import (Stdcall, GetWindowRect, "GetWindowRect");
    
    function CreateCompatibleBitmap(
@@ -349,14 +375,33 @@ package body w32 is
                         ) return HGDIOBJ;
    pragma Import (Stdcall, SelectObject, "SelectObject");
    
-   function BitBlt(
-                   dc : HDC;
-                   x, y, cx, cy : Interfaces.C.int;
-                   hdcSrc : HDC;
-                   x1, y1 : Interfaces.C.int;
-                   rop : DWORD
-                  ) return BOOL;
+   function BitBlt
+     (dc : HDC;
+      x, y, cx, cy : Interfaces.C.int;
+      hdcSrc : HDC;
+      x1, y1 : Interfaces.C.int;
+      rop : DWORD)
+      return BOOL;
    pragma Import (Stdcall, BitBlt, "BitBlt");
+   
+   function ClientToScreen
+     (h : HWND;
+      p : in out POINT)
+      return BOOL;
+   pragma Import (Stdcall, ClientToScreen, "ClientToScreen");
+   
+   function SetWindowPos
+     (w : HWND;
+      after : HWND;
+      X, Y, cx, cy : int;
+      uFlags : UINT)
+      return BOOL;
+   pragma Import (Stdcall, SetWindowPos, "SetWindowPos");
+   
+   function SetCapture
+     (handle : HWND)
+      return HWND;
+   pragma Import (Stdcall, SetCapture, "SetCapture");
    
    function callback(
                      handle : HWND;
@@ -381,15 +426,21 @@ package body w32 is
       
       sc := GetWindowLongPtrA(handle, GWLP_USERDATA);
       if sc /= null then
-         Put_Line("callback: " & System.Address_Image(sc.all'Address));
+         Put_Line("Skin callback is " & System.Address_Image(sc.all'Address));
       else
-         Put_Line("callback: null");
+         Put_Line ("Skin callback is null.");
       end if;
       
       case uMsg is
          when WM_CLOSE =>
-            PostQuitMessage(0);
-            return 0;
+            Put_Line ("WM_CLOSE");
+            null;
+         when WM_DESTROY =>
+            Put_Line ("WM_DESTROY");
+            if handle = HWND (main_window) then
+               PostQuitMessage(0);
+               return 0;
+            end if;
          when WM_ERASEBKGND => -- prevent flickering
             return 1;
          when WM_SETCURSOR =>
@@ -508,6 +559,7 @@ package body w32 is
       instance : HINSTANCE := HINSTANCE(GetModuleHandleA(LPCSTR(Null_Address)));
       c_class_name : Interfaces.C.char_array := Interfaces.C.To_C(class_name);
    begin
+      Put_Line ("Initializing W32 GUI.");
       class.style := 0;
       class.cbClsExtra := Interfaces.C.int(0);
       class.cbWndExtra := Interfaces.C.int(0);
@@ -527,7 +579,7 @@ package body w32 is
          Put_Line ("null instance");
          raise Program_Error;
       end if;
-      class.icon := LoadIconA(HINSTANCE(Null_Address), MAKEINTRESOURCE(System'To_Address(IDI_APPLICATION)));
+      class.icon := LoadIconA(null, 32512);
       if class.icon = HICON(Null_Address) then
          -- error(GetLastError);
          Put_Line ("Error loading default window icon.");
@@ -578,7 +630,7 @@ package body w32 is
       end if;
    end W32_Quit;
    
-   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : access Skin_Callbacks) return Window is
+   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : access Skin_Callbacks) return Window_Type is
       c_class_name : Interfaces.C.char_array := Interfaces.C.To_C(class_name);
       c_title : Interfaces.C.char_array := Interfaces.C.To_C(title);
       c_x : Interfaces.C.int := Interfaces.C.int(x);
@@ -593,24 +645,37 @@ package body w32 is
       if callbacks /= null then
          Put_Line("sc1: " & System.Address_Image(callbacks.all'Address));
       end if;
-      r := CreateWindowExA(0, LPCSTR(c_class_name'Address), LPCSTR(c_title'Address), dwStyle, c_x, c_y, c_w, c_h, Window_To_HWND(main_window), HMENU(Null_Address), HINSTANCE(Null_Address), callbacks);
+      r := CreateWindowExA
+        (0,
+         LPCSTR (c_class_name'Address),
+         LPCSTR (c_title'Address),
+         dwStyle,
+         c_x,
+         c_y,
+         c_w,
+         c_h,
+         HWND (main_window),
+         HMENU (Null_Address),
+         HINSTANCE(Null_Address),
+         callbacks);
       if False then
-         Put_Line("HWND: " & System.Address_Image(System.Address(r)));
+         --Put_Line("HWND: " & System.Address_Image(System.Address(r)));
+         null;
       end if;
-      if r = HWND(Null_Address) then
+      if r = null then
          error(GetLastError);
          raise Program_Error;
       end if;
       ret1 := SetWindowLongPtrA(r, GWLP_USERDATA, callbacks);
-      return HWND_To_Window(r);
+      return Window_Type (r);
    end W32_Create_Window;
    
-   procedure W32_Destroy_Window(w : Window) is
+   procedure W32_Destroy_Window(w : Window_Type) is
       r : BOOL;
    begin
-      r := DestroyWindow(Window_To_HWND(w));
+      r := DestroyWindow (HWND (w));
       if r = 0 then
-         raise Program_Error;
+         Put_Line ("Window could not be destroyed.");
       end if;
    end W32_Destroy_Window;
    
@@ -620,57 +685,66 @@ package body w32 is
       r2 : LRESULT;
    begin
       loop
-         r1 := GetMessageA(LPMSG(message'Address), HWND(Null_Address), 0, 0);
+         r1 := GetMessageA(LPMSG(message'Address), null, 0, 0);
          exit when r1 = 0;
          r1 := TranslateMessage(LPMSG(message'Address));
          r2 := DispatchMessageA(LPMSG(message'Address));
       end loop;
    end W32_Event_Handler;
    
-   procedure W32_Show_Window(w : Window) is
+   procedure W32_Show_Window(w : Window_Type) is
       r : BOOL;
    begin
-      if False then
-         Put_Line("ShowWindow HWND: " & System.Address_Image(System.Address(Window_To_HWND(w))));
-      end if;
-      r := ShowWindow(Window_To_HWND(w), SW_SHOW);
+      r := ShowWindow(HWND(w), SW_SHOW);
       if r = 0 then
          --error(GetLastError);
          null;
       end if;
    end W32_Show_Window;
    
-   procedure W32_Hide_Window(w : Window) is
+   procedure W32_Hide_Window (w : Window_Type) is
       r : BOOL;
    begin
-      r := ShowWindow(Window_To_HWND(w), SW_HIDE);
+      r := ShowWindow (HWND (w), SW_HIDE);
       if r = 0 then
          null;
       end if;
    end W32_Hide_Window;
    
-   procedure W32_Move_Window(w : Window; x : Integer; y : Integer) is
+   procedure W32_Move_Window(w : Window_Type; x : Integer; y : Integer) is
+      --pos : aliased POINT;
+      r : aliased RECT;
+      ret : BOOL;
    begin
-      null;
+      --pos.x := long (x);
+      --pos.y := long (y);
+      --ret := ClientToScreen (Window_To_HWND (w), pos);
+      ret := GetWindowRect (HWND (w), r);
+      r.left := r.left + long (x);
+      r.top := r.top + long (y);
+      ret := SetWindowPos
+        (HWND (w), null,
+         int (r.left), int (r.top), 0, 0,
+         SWP_NOSIZE or SWP_NOZORDER);
    end W32_Move_Window;
    
-   procedure W32_Redraw_Window(w : Window) is
+   procedure W32_Redraw_Window(w : Window_Type) is
       r : BOOL;
    begin
       r := RedrawWindow (w, Null_Address, Null_Address, RDW_INVALIDATE);
    end W32_Redraw_Window;
    
-   procedure W32_Set_Topmost(w : Window) is
+   procedure W32_Set_Topmost(w : Window_Type) is
    begin
       null;
    end W32_Set_Topmost;
    
-   procedure W32_Set_Not_Topmost(w : Window) is
+   procedure W32_Set_Not_Topmost(w : Window_Type) is
    begin
       null;
    end W32_Set_Not_Topmost;
    
-   procedure W32_Resize_Window(w : Window; width : Integer; height : Integer) is
+   procedure W32_Resize_Window(w : Window_Type; width : Integer; height : Integer) is
    begin
       null;
    end W32_Resize_Window;
@@ -680,7 +754,7 @@ package body w32 is
       null;
    end W32_Get_Window_Rect;
    
-   procedure W32_Minimize_Window(w : Window) is
+   procedure W32_Minimize_Window(w : Window_Type) is
    begin
       null;
    end W32_Minimize_Window;
@@ -698,17 +772,17 @@ package body w32 is
       null;
    end W32_Unload_Image;
    
-   procedure W32_Begin_Drawing(w : Window) is
+   procedure W32_Begin_Drawing(w : Window_Type) is
       r : RECT;
       width, height : Interfaces.C.int;
       ret1 : HDC;
       ret2 : HGDIOBJ;
       ret3 : BOOL;
    begin
-      ret1 := BeginPaint(Window_To_HWND(w), p);
-      cur_window := Window_To_HWND(w);
+      ret1 := BeginPaint (HWND (w), p);
+      cur_window := HWND (w);
       
-      ret3 := GetWindowRect(Window_To_HWND(w), r);
+      ret3 := GetWindowRect (HWND (w), r);
       width := Interfaces.C.int(r.right - r.left);
       height := Interfaces.C.int(r.bottom - r.top);
       mem_bmp := CreateCompatibleBitmap(p.dc, width, height);
@@ -758,9 +832,10 @@ package body w32 is
       ret1 := EndPaint(cur_window, new PAINTSTRUCT'(p));
    end W32_End_Drawing;
    
-   procedure W32_Capture_Mouse(w : Window) is
+   procedure W32_Capture_Mouse(w : Window_Type) is
+      Previous : HWND;
    begin
-      null;
+      Previous := SetCapture(HWND(w));
    end W32_Capture_Mouse;
    
    procedure W32_Release_Mouse is
@@ -786,7 +861,7 @@ package body w32 is
       current_cursor := HCURSOR(p);
    end W32_Set_Cursor;
 
-   function W32_Check_Glue(a : Window; b : Window; x : Integer; y : Integer) return Boolean is
+   function W32_Check_Glue(a : Window_Type; b : Window_Type; x : Integer; y : Integer) return Boolean is
    begin
       return False;
    end W32_Check_Glue;
@@ -801,4 +876,4 @@ package body w32 is
       null;
    end W32_Open_Dir_Dialog;
 
-end w32;
+end Overkill.Gui.W32;

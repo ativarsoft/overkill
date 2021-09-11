@@ -1,11 +1,10 @@
-with Ada.Text_IO;
-with W32;
-use W32;
-with Gui;
-use Gui;
-with Playback;
+with Overkill.Debug;
+use Overkill.Debug;
+with Overkill.Playback;
+with Overkill.Platform;
+use Overkill.Platform;
 
-package body Classic is
+package body Overkill.Classic is
    --
    -- Enumerations
    --
@@ -90,7 +89,7 @@ package body Classic is
    type Slider_Action_Func is access procedure (value : Integer);
 
    type Clutterbar_O is access procedure;
-   type Clutterbar_A is access procedure (a : Window; b : Boolean);
+   type Clutterbar_A is access procedure (a : Window_Type; b : Boolean);
    type Clutterbar_I is access procedure;
    type Clutterbar_D is access procedure (a : Boolean);
    type Clutterbar_V is access procedure;
@@ -144,10 +143,10 @@ package body Classic is
       end case;
    end record;
 
-   type Mouse_Down_Handler_Func is access procedure (wid : access Widget; win : Window; X, Y : Integer);
-   type Mouse_Up_Handler_Func is access procedure (wid : access Widget; win : Window; X, Y : Integer);
-   type Mouse_Move_Handler_Func is access procedure (wid : access Widget; win : Window; X, Y : Integer);
-   type Draw_Handler_Func is access procedure (wid : access Widget; win : Window);
+   type Mouse_Down_Handler_Func is access procedure (wid : access Widget; win : Window_Type; X, Y : Integer);
+   type Mouse_Up_Handler_Func is access procedure (wid : access Widget; win : Window_Type; X, Y : Integer);
+   type Mouse_Move_Handler_Func is access procedure (wid : access Widget; win : Window_Type; X, Y : Integer);
+   type Draw_Handler_Func is access procedure (wid : access Widget; win : Window_Type);
 
    type Handler is record
 	mouse_down : Mouse_Down_Handler_Func;
@@ -255,9 +254,9 @@ package body Classic is
       new String'("WSPOSBAR.CUR"),
       new String'("WSWINBUT.CUR"));
 
-   w1 : Window;
-   w2 : Window;
-   w3 : Window;
+   w1 : Window_Type;
+   w2 : Window_Type;
+   w3 : Window_Type;
 
    bmps : array (0..Bitmap'Pos(NUM_BMPS)) of gui.Pixmap;
    cursors : array (0..Cursor'Pos(NUM_CURSORS)) of gui.Cursor;
@@ -508,12 +507,12 @@ package body Classic is
 
    procedure Test_Button is
    begin
-      Ada.Text_IO.Put_Line("Test Button");
+      Put_Line("Test Button");
    end Test_Button;
 
    procedure Test_Checkbox(state : Boolean) is
    begin
-      Ada.Text_IO.Put_Line("Test Checkbox: " & state'Image);
+      Put_Line("Test Checkbox: " & state'Image);
    end Test_Checkbox;
 
    procedure Cmd_Main_Minimize is
@@ -591,7 +590,7 @@ package body Classic is
       null;
    end Clutterbar_Set_O;
 
-   procedure Clutterbar_Set_A(a : Window; b : Boolean) is
+   procedure Clutterbar_Set_A(a : Window_Type; b : Boolean) is
    begin
       null;
    end Clutterbar_Set_A;
@@ -629,7 +628,7 @@ package body Classic is
       gui.gui.draw_image(bmp, 90, 26, 9, 13, 9 * (seconds mod 10), 0);
    end Draw_Time;
 
-   procedure Capture_Mouse(win : Window; wid : access Widget) is
+   procedure Capture_Mouse(win : Window_Type; wid : access Widget) is
    begin
       gui.gui.capture_mouse(win);
       capture := wid;
@@ -705,7 +704,7 @@ package body Classic is
 
    procedure Background_Mouse_Down(
                                    wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                   ) is
    begin
@@ -718,7 +717,7 @@ package body Classic is
 
    procedure Background_Mouse_Up(
                                  wid : access Widget;
-                                 win : Window;
+                                 win : Window_Type;
                                  X, Y : Integer
                                 ) is
    begin
@@ -729,7 +728,7 @@ package body Classic is
 
    procedure Background_Mouse_Move(
                                    wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                   )
    is
@@ -749,7 +748,7 @@ package body Classic is
       end if;
    end Background_Mouse_Move;
 
-   procedure Background_Draw(wid : access Widget; win : Window) is
+   procedure Background_Draw(wid : access Widget; win : Window_Type) is
       r : access constant Rect;
    begin
       r := new Rect'(wid.r);
@@ -758,7 +757,7 @@ package body Classic is
 
    procedure Button_Mouse_Down(
                                wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                               ) is
    begin
@@ -768,7 +767,7 @@ package body Classic is
 
    procedure Button_Mouse_Up(
                              wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                             ) is
    begin
@@ -786,14 +785,14 @@ package body Classic is
 
    procedure Button_Mouse_Move(
                               wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                X, Y : Integer
                               ) is
    begin
       null;
    end Button_Mouse_Move;
 
-   procedure Button_Draw(wid : access Widget; win : Window)
+   procedure Button_Draw(wid : access Widget; win : Window_Type)
    is
       r : Rect := wid.r;
       subbmp : access Subbitmap;
@@ -808,7 +807,7 @@ package body Classic is
 
    procedure Checkbox_Mouse_Down
      (wid : access Widget;
-      win : Window;
+      win : Window_Type;
       X, Y : Integer) is
    begin
       Capture_Mouse (win, wid);
@@ -817,7 +816,7 @@ package body Classic is
 
    procedure Checkbox_Mouse_Up
      (wid : access Widget;
-      win : Window;
+      win : Window_Type;
       X, Y : Integer) is
    begin
       if Capture = wid then
@@ -835,14 +834,14 @@ package body Classic is
 
    procedure Checkbox_Mouse_Move(
                                  wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                 ) is
    begin
       null;
    end Checkbox_Mouse_Move;
 
-   procedure Checkbox_Draw(wid : access Widget; win : Window)
+   procedure Checkbox_Draw(wid : access Widget; win : Window_Type)
    is
       r : Rect;
       subbmp : access Subbitmap;
@@ -867,7 +866,7 @@ package body Classic is
 
    procedure Slider_Mouse_Down
      (wid : access Widget;
-      win : Window;
+      win : Window_Type;
       X, Y : Integer) is
    begin
       Capture_Mouse (win, wid);
@@ -878,7 +877,7 @@ package body Classic is
 
    procedure Slider_Mouse_Up
      (wid : access Widget;
-      win : Window;
+      win : Window_Type;
       X, Y : Integer) is
    begin
       Release_Mouse;
@@ -887,13 +886,13 @@ package body Classic is
 
    procedure Slider_Mouse_Move
      (wid : access Widget;
-      win : Window;
+      win : Window_Type;
       X, Y : Integer)
    is
       Difference : Integer;
       Value : Integer;
    begin
-      Ada.Text_IO.Put_Line ("wid.slider_value " & wid.slider_value'Image);
+      Put_Line ("wid.slider_value " & wid.slider_value'Image);
       if Capture = wid then
          if wid.slider_horizontal = True then
             Difference := X - Last_X;
@@ -913,18 +912,18 @@ package body Classic is
             wid.slider_value := Value;
          end if;
 
-         Ada.Text_IO.Put_Line ("value: " & wid.slider_value'Image);
+         Put_Line ("value: " & wid.slider_value'Image);
 
          gui.gui.redraw_window (win);
       end if;
    end Slider_Mouse_Move;
 
-   procedure Slider_Draw(wid : access Widget; win : Window) is
+   procedure Slider_Draw(wid : access Widget; win : Window_Type) is
       r : Rect;
       bg, bar : access Subbitmap;
       n, slider_range : Natural;
    begin
-      Ada.Text_IO.Put_Line ("Slider_Draw: wid.slider_value: " & wid.slider_value'Image);
+      Put_Line ("Slider_Draw: wid.slider_value: " & wid.slider_value'Image);
       r := wid.r;
 
       -- select the background
@@ -963,7 +962,7 @@ package body Classic is
 
    procedure Clutterbar_Mouse_Down(
                                    wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                   ) is
    begin
@@ -972,7 +971,7 @@ package body Classic is
 
    procedure Clutterbar_Mouse_Up(
                                  wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                 ) is
    begin
@@ -981,21 +980,21 @@ package body Classic is
 
    procedure Clutterbar_Mouse_Move(
                                    wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                   ) is
    begin
       null;
    end Clutterbar_Mouse_Move;
 
-   procedure Clutterbar_Draw(wid : access Widget; win : Window) is
+   procedure Clutterbar_Draw(wid : access Widget; win : Window_Type) is
    begin
       null;
    end Clutterbar_Draw;
 
    procedure Song_Title_Mouse_Down(
                                   wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                   ) is
    begin
@@ -1004,7 +1003,7 @@ package body Classic is
 
    procedure Song_Title_Mouse_Up(
                                 wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                  X, Y : Integer
                                 ) is
    begin
@@ -1013,21 +1012,21 @@ package body Classic is
 
    procedure Song_Title_Mouse_Move(
                                   wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                    X, Y : Integer
                                   ) is
    begin
       null;
    end Song_Title_Mouse_Move;
 
-   procedure Song_Title_Draw(wid : access Widget; win : Window) is
+   procedure Song_Title_Draw(wid : access Widget; win : Window_Type) is
    begin
       null;
    end Song_Title_Draw;
 
    procedure Scroll_Mouse_Down(
                               wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                X, Y : Integer
                               ) is
    begin
@@ -1036,7 +1035,7 @@ package body Classic is
 
    procedure Scroll_Mouse_Up(
                             wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                              X, Y : Integer
                             ) is
    begin
@@ -1045,14 +1044,14 @@ package body Classic is
 
    procedure Scroll_Mouse_Move(
                               wid : access Widget;
-                                   win : Window;
+                                   win : Window_Type;
                                X, Y : Integer
                               ) is
    begin
       null;
    end Scroll_Mouse_Move;
 
-   procedure Scroll_Draw(wid : access Widget; win : Window) is
+   procedure Scroll_Draw(wid : access Widget; win : Window_Type) is
    begin
       null;
    end Scroll_Draw;
@@ -1424,13 +1423,13 @@ package body Classic is
    is
       R : Rect;
       wid : access Widget := null;
-      I : Natural := Num_Controls - 1;
+      I : Natural := Num_Controls;
    begin
-      while I >= 0 loop
+      while I > 0 loop
          R := Temp(I).r;
          if X >= r(1) and Y >= r(2)
            and X <= (r(1) + r(3)) and Y < (r(2) + r(4)) then
-            Ada.Text_IO.Put_Line ("Collision with widget " & I'Image);
+            Put_Line ("Collision with widget " & I'Image);
             wid := Temp(I);
             exit;
          end if;
@@ -1440,7 +1439,7 @@ package body Classic is
    end Collision_Detection;
 
    procedure Template_Mouse_Down
-     (win : Window;
+     (win : Window_Type;
       Temp : Template;
       X, Y : Integer)
    is
@@ -1454,7 +1453,7 @@ package body Classic is
    end Template_Mouse_Down;
 
    procedure Template_Mouse_Up
-     (win : Window;
+     (win : Window_Type;
       Temp : Template;
       X, Y : Integer)
    is
@@ -1473,7 +1472,7 @@ package body Classic is
    end Template_Mouse_Up;
 
    procedure Template_Mouse_Move
-     (win : Window;
+     (win : Window_Type;
       Temp : Template;
       X, Y : Integer)
    is
@@ -1489,13 +1488,10 @@ package body Classic is
       if wid /= null then
          gui.gui.set_cursor(cursors(Cursor'Pos(wid.c)));
          wid.control.mouse_move(wid, win, X, Y);
-      else
-         Ada.Text_IO.Put_Line("Template_Mouse_Move: error: cursor did not collide.");
-         raise Program_Error;
       end if;
    end Template_Mouse_Move;
 
-   procedure Template_Draw(win : Window; temp : Template) is
+   procedure Template_Draw(win : Window_Type; temp : Template) is
    begin
       gui.gui.begin_drawing(win);
       for I in main_template'Range loop
@@ -1553,68 +1549,88 @@ package body Classic is
 
    procedure Main_Draw is
    begin
-      Ada.Text_IO.Put_Line("main: draw");
+      Put_Line("main: draw");
       template_draw(w1, main_template);
    end Main_Draw;
 
-   main_callbacks : Skin_Callbacks := (
-                                       mouse_down => Main_Mouse_Down'Access,
-                                       mouse_up => Main_Mouse_Up'Access,
-                                       mouse_move => Main_Mouse_Move'Access,
-                                       draw => Main_Draw'Access,
-                                       focus => null,
-                                       resize => null
-                                      );
+   main_callbacks : Skin_Callbacks :=
+     (mouse_down => Main_Mouse_Down'Access,
+      mouse_up => Main_Mouse_Up'Access,
+      mouse_move => Main_Mouse_Move'Access,
+      draw => Main_Draw'Access,
+      focus => null,
+      resize => null);
 
-   procedure Init is
-      bmp : gui.Pixmap;
-      cur : gui.Cursor;
+   procedure New_Classic
+     (Skin : in out Classic_Skin_Type;
+      GUI : Gui_Dispatch)
+   is
+      bmp : Overkill.Gui.Pixmap;
+      cur : Overkill.Gui.Cursor;
    begin
-      w1 := gui.gui.create_window(0, 0, 275, 116, "Main", new Skin_Callbacks'(main_callbacks));
+      Put_Line ("Loading classic skin.");
+      Skin.GUI := GUI;
+      w1 := Skin.GUI.create_window (0, 0, 275, 116, "Main", new Skin_Callbacks'(main_callbacks));
       if w1 = null then
-         raise Program_Error;
+         raise Program_Error with "Failed to create Main Window.";
       end if;
       main_window := w1;
-      w2 := gui.gui.create_window(0, 116, 275, 116, "Equalizer", null);
+      w2 := Skin.GUI.create_window (0, 116, 275, 116, "Equalizer", null);
       if w2 = null then
-         raise Program_Error;
+         raise Program_Error with "Failed to create Equalizer Window.";
       end if;
-      w3 := gui.gui.create_window(0, 116*2, 275, 116, "Playlist", null);
+      w3 := Skin.GUI.create_window (0, 116*2, 275, 116, "Playlist", null);
       if w3 = null then
-         raise Program_Error;
+         raise Program_Error with "Failed to create Playlist Window.";
       end if;
       for I in bmp_files'Range loop
-         bmp := gui.gui.load_image("skins/classic/" & bmp_files(I).all);
+         bmp := Skin.GUI.load_image ("skins/classic/" & bmp_files(I).all);
          if bmp = null then
-            Ada.Text_IO.Put_Line(bmp_files(I).all & ": could not load bmp file");
+            Put_Line (bmp_files(I).all & ": could not load bmp file");
          end if;
-         Ada.Text_IO.Put_Line("I=" & I'Image);
+         Put_Line ("I=" & I'Image);
          bmps(I) := bmp;
       end loop;
       for I in cursor_files'Range loop
-         cur := gui.gui.load_cursor("skins/classic/" & cursor_files(I).all);
+         cur := Skin.GUI.load_cursor ("skins/classic/" & cursor_files(I).all);
          if cur = null then
-            Ada.Text_IO.Put_Line(cursor_files(I).all & ": could not load cursor file");
+            Put_Line (cursor_files(I).all & ": could not load cursor file");
          end if;
-         cursors(I) := cur;
+         cursors (I) := cur;
       end loop;
       -- ShowWindow might be ignored the first time it's called on win32
-      gui.gui.show_window(w1);
-      gui.gui.show_window(w1);
-      --gui.gui.show_window(w2);
-      --gui.gui.show_window(w3);
-   end Init;
+      Skin.GUI.show_window (w1);
+      Skin.GUI.show_window (w1);
+      --Skin.GUI.show_window (w2);
+      --Skin.GUI.show_window (w3);
+   end New_Classic;
 
-   procedure Quit is
+   procedure Finalize
+     (Skin : in out Classic_Skin_Type)
+   is
    begin
+      Put_Line ("Finalizing classic skin.");
       for I in bmp_files'Range loop
-         gui.gui.unload_image(bmps(I));
+         Skin.Gui.unload_image(bmps(I));
       end loop;
       for I in cursor_files'Range loop
-         gui.gui.unload_cursor(cursors(I));
+         Skin.Gui.unload_cursor(cursors(I));
       end loop;
-      gui.gui.destroy_window(w3);
-      gui.gui.destroy_window(w2);
-      gui.gui.destroy_window(w1);
-   end Quit;
-end Classic;
+      Skin.Gui.destroy_window(w3);
+      Skin.Gui.destroy_window(w2);
+      Skin.Gui.destroy_window(w1);
+   exception
+      when Program_Error =>
+         Put_Line ("Error finalizing classic skin.");
+         return;
+   end Finalize;
+
+   procedure Run
+     (Skin : in out Classic_Skin_Type)
+   is
+   begin
+      Put_Line ("Entering event loop.");
+      Skin.GUI.event_handler.all;
+      Put_Line ("Leaving event loop.");
+   end Run;
+end Overkill.Classic;
