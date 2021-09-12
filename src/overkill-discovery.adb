@@ -65,7 +65,10 @@ package body Overkill.Discovery is
       Library : Library_Type;
       RC : Natural;
    begin
-      Library := LoadLibraryExA (New_String (Path), null, DONT_RESOLVE_DLL_REFERENCES);
+      -- If references are not resolved, external functions like MessageBox will
+      -- cause the program to crash
+      --Library := LoadLibraryExA (New_String (Path), null, DONT_RESOLVE_DLL_REFERENCES);
+      Library := LoadLibraryExA (New_String (Path), null, 0);
       if Library = null then
          RC := Natural (GetLastError);
          raise Program_Error with "Failed to load library " & Path & ". GetLastError is returning " & RC'Image & ".";
