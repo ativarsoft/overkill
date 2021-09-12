@@ -162,9 +162,10 @@ package body Overkill.Plugin.W32 is
       In_Module.Dsp_Is_Active := Dsp_Is_Active'Access;
       In_Module.Do_Samples := Do_Samples'Access;
       In_Module.Set_Info := Set_Info'Access;
+      In_Module.Init.all;
       Put_Line ("Description: " & To_Ada (Value (In_Module.Description)));
       Put_Line ("Calling about function.");
-      In_Module.About.all;
+      In_Module.About.all (main_window);
    exception
       when E : others =>
          Put_Line (Ada.Exceptions.Exception_Information (E));
