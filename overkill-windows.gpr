@@ -17,8 +17,8 @@ project Overkill.Windows extends "overkill.gpr" is
 
    package Compiler is
       for Driver ("WinRes") use "windres";
-      for Default_Switches ("WinRes") use ("--target=pe-x86-64");
-      for Leading_Required_Switches ("WinRes") use ("-i");
+      --for Default_Switches ("WinRes") use ("--target=pe-x86-64");
+      --for Leading_Required_Switches ("WinRes") use ("-i");
       for Object_File_Suffix ("WinRes") use ".o";
    end Compiler;
 
