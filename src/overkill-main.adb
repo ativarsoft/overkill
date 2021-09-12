@@ -32,10 +32,9 @@ begin
    New_Classic (Skin, Overkill.Gui.gui);
    --Tray.Init;
    --Menus.Init;
-   --Discovery.Init;
+   Discovery.New_Discovery; -- Must be called after New_Classic
    --Tray.Show;
    Skin.Run;
-   --Discovery.Quit;
    --Menus.Quit;
    --Tray.Quit;
    gui.gui.quit.all;

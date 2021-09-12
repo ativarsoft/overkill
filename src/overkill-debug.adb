@@ -6,7 +6,7 @@ package body Overkill.Debug is
      (Message : String)
    is
    begin
-      if False then
+      if True then
          Ada.Text_IO.Put_Line(Message);
       end if;
    end Put_Line;

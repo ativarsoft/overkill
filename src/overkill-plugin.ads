@@ -10,7 +10,7 @@ package Overkill.Plugin is
    type Pcm_Data_Type is access unsigned_short;
    
    type Configure_Type is access procedure;
-   type About_Type is access procedure;
+   type About_Type is access procedure (hwndParent : Window_Type);
    type Init_Type is access procedure;
    type Quit_Type is access procedure;
    type Get_File_Info_Type is access procedure;
