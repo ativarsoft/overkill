@@ -5,10 +5,13 @@ use Overkill.Debug;
 with Interfaces.C.Strings;
 use Interfaces.C.Strings;
 with Ada.Exceptions;
+with Overkill.Plugin.Output;
+use Overkill.Plugin.Output;
 
 package body Overkill.Plugin.W32 is
    
    type Get_In_Module_Type is access function return access In_Plugin_Type;
+   type Get_Out_Module_Type is access function return Out_Plugin_Type;
    
    type DWORD is new Interfaces.C.unsigned;
    
@@ -16,12 +19,16 @@ package body Overkill.Plugin.W32 is
      (Module_Handle : Library_Type;
       lpProcName : chars_ptr)
       return Get_In_Module_Type;
+   function GetProcAddress
+     (Module_Handle : Library_Type;
+      lpProcName : chars_ptr)
+      return Get_Out_Module_Type;
    pragma Import (Stdcall, GetProcAddress, "GetProcAddress");
    
    function GetLastError return DWORD;
    pragma Import (Stdcall, GetLastError, "GetLastError");
    
-   function Get_Symbol
+   function Get_In_Symbol
      (Library : Library_Type;
       Symbol : String)
       return Get_In_Module_Type
@@ -35,7 +42,23 @@ package body Overkill.Plugin.W32 is
          raise Program_Error with "Failed to get symbol " & Symbol & ". GetLastError returned " & RC'Image & ".";
       end if;
       return Get_In_Module;
-   end Get_Symbol;
+   end Get_In_Symbol;
+   
+   function Get_Out_Symbol
+     (Library : Library_Type;
+      Symbol : String)
+      return Get_Out_Module_Type
+   is
+      Get_Out_Module : Get_Out_Module_Type;
+      RC : DWORD;
+   begin
+      Get_Out_Module := GetProcAddress (Library, New_String (Symbol));
+      if Get_Out_Module = null then
+         RC := GetLastError;
+         raise Program_Error with "Failed to get symbol " & Symbol & ". GetLastError returned " & RC'Image & ".";
+      end if;
+      return Get_Out_Module;
+   end Get_Out_Symbol;
    
    procedure Sa_Vsa_Init
      (latency : int; rate : int)
@@ -146,8 +169,12 @@ package body Overkill.Plugin.W32 is
       Get_In_Module : Get_In_Module_Type;
       In_Module : access In_Plugin_Type;
    begin
-      Get_In_Module := Get_Symbol (Library, "winampGetInModule2");
+      Get_In_Module := Get_In_Symbol (Library, "winampGetInModule2");
+      if Get_In_Module = null then
+         return;
+      end if;
       In_Module := Get_In_Module.all;
+      
       In_Module.Window := main_window;
       In_Module.Instance := Library;
       In_Module.Sa_Vsa_Init := Sa_Vsa_Init'Access;
@@ -175,8 +202,23 @@ package body Overkill.Plugin.W32 is
      (Plugin_Manager : W32_Plugin_Manager_Type;
       Library : Library_Type)
    is
+      Out_Module : Out_Plugin_Type;
+      Get_Out_Module : Get_Out_Module_Type;
    begin
-      null;
+      Get_Out_Module := Get_Out_Symbol (Library, "winampGetOutModule");
+      if Get_Out_Module = null then
+         return;
+      end if;
+      Out_Module := Get_Out_Module.all;
+      
+      Out_Module.Window := main_window;
+      Out_Module.Instance := Library;
+      
+      Out_Module.init.all;
+      Out_Module.Set_Volume(255);
+      Out_Module.Set_Panning(0);
+      
+      Put_Line ("Description: " & To_Ada (Value (Out_Module.Description)));
    end Load_Output_Plugin;
    
    procedure Load_General_Plugin

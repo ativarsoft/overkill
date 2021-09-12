@@ -85,8 +85,6 @@ package Overkill.Plugin is
       --Out_Plugin;
    end record;
    
-   type Out_Plugin_Type is null record;
-   
    type Plugin_Manager_Type is interface;
 
    procedure Load_Input_Plugin
@@ -118,7 +116,5 @@ package Overkill.Plugin is
      (Plugin_Manager : Plugin_Manager_Type;
       Library : Library_Type)
    is abstract;
-   
-   Out_Plugin : Out_Plugin_Type;
 
 end Overkill.Plugin;

@@ -8,6 +8,7 @@ with Ada.Directories;
 use Ada.Directories;
 with Overkill.Plugin;
 use Overkill.Plugin;
+with Overkill.Plugin.Output;
 with Overkill.Platform;
 use Overkill.Platform;
 with Ada.Command_Line;
