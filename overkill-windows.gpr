@@ -1,6 +1,7 @@
 project Overkill.Windows extends "overkill.gpr" is
 
    -- Object for Windows Resources
+   -- WARNING: GPS 2017 removes unknown languages when saving project files
    for Languages use ("Ada", "WinRes");
    for Source_Dirs use ("windows", "resources");
    for Object_Dir use "windows-obj";
