@@ -94,7 +94,7 @@ package body Overkill.Classic is
    type Clutterbar_D is access procedure (a : Boolean);
    type Clutterbar_V is access procedure;
 
-   type Widget(T : Widget_Type) is record
+   type Widget(T : Widget_Type := Background_Widget) is record
       r : Rect;
       c : Cursor;
       control : access constant Handler;
@@ -155,7 +155,7 @@ package body Overkill.Classic is
 	draw : Draw_Handler_Func;
    end record;
 
-   type Template is array (Positive range <>) of access Widget;
+   type Template is array (Positive range <>) of aliased Widget;
 
    type Resizeable_Background_Data is record
       top_left : access Subbitmap;
@@ -702,11 +702,10 @@ package body Overkill.Classic is
       end loop;
    end Draw_Pixmap_Loop_Vertical;
 
-   procedure Background_Mouse_Down(
-                                   wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                  ) is
+   procedure Background_Mouse_Down
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       if Y < 16 or easymove then
          Capture_Mouse(win, wid);
@@ -715,11 +714,10 @@ package body Overkill.Classic is
       end if;
    end Background_Mouse_Down;
 
-   procedure Background_Mouse_Up(
-                                 wid : access Widget;
-                                 win : Window_Type;
-                                 X, Y : Integer
-                                ) is
+   procedure Background_Mouse_Up
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       if Y < 16 or easymove then
          Release_Mouse;
@@ -1167,259 +1165,213 @@ package body Overkill.Classic is
                                                       new Subbitmap'(subbmp_balance_bg28)
                                                      );
 
-   main_template : Template := (
-                                new Widget'(
-                                  Background_Widget,
-                                  (0, 0, 275, 116),
-                                  CURSOR_NORMAL,
-                                  new Handler'(background_handlers),
-                                  new Subbitmap'(subbmp_main),
-                                  False
-                                 ),
-                                new Widget'(
-                                  Background_Widget,
-                                  (0, 0, 275, 14),
-                                  CURSOR_TITLEBAR,
-                                  new Handler'(background_handlers),
-                                  new Subbitmap'(subbmp_title_bar_off),
-                                  False
-                                 ),
-                                new Widget'(
-                                  Background_Widget,
-                                  (212, 41, 29, 12),
-                                  CURSOR_NORMAL,
-                                  new Handler'(background_handlers),
-                                  new Subbitmap'(subbmp_mono_off),
-                                  False
-                                 ),
-                                new Widget'(
-                                  Background_Widget,
-                                  (939, 41, 29, 12),
-                                  CURSOR_NORMAL,
-                                  new Handler'(background_handlers),
-                                  new Subbitmap'(subbmp_stereo_off),
-                                  False
-                                 ),
-                                new Widget'(
-                                  Background_Widget,
-                                  (26, 28, 9, 9),
-                                  CURSOR_NORMAL,
-                                  new Handler'(background_handlers),
-                                  new Subbitmap'(subbmp_status_stop),
-                                  False
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (6, 3, 9, 9),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_options_up),
-                                  new Subbitmap'(subbmp_options_down),
-                                  Test_Button'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (244, 3, 9, 9),
-                                  CURSOR_MIN,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_minimize_up),
-                                  new Subbitmap'(subbmp_minimize_down),
-                                  Cmd_Main_Minimize'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (254, 3, 9, 9),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_maximize_normal_up),
-                                  new Subbitmap'(subbmp_maximize_normal_down),
-                                  Cmd_Main_Maximize'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (264, 3, 9, 9),
-                                  CURSOR_CLOSE,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_close_up),
-                                  new Subbitmap'(subbmp_close_down),
-                                  Cmd_Main_Close'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (16+23*0, 88, 23, 18),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_previous_up),
-                                  new Subbitmap'(subbmp_previous_down),
-                                  Cmd_Main_Previous'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (16+23*1-1, 88, 23, 18),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_play_up),
-                                  new Subbitmap'(subbmp_play_down),
-                                  Cmd_Main_Play'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (16+23*2-1, 88, 23, 18),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_pause_up),
-                                  new Subbitmap'(subbmp_pause_down),
-                                  Cmd_Main_Pause'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (16+23*3-1, 88, 23, 18),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_stop_up),
-                                  new Subbitmap'(subbmp_stop_down),
-                                  Cmd_Main_Stop'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (16+23*4-1, 88, 23, 18),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_next_up),
-                                  new Subbitmap'(subbmp_next_down),
-                                  Cmd_Main_Next'Access
-                                 ),
-                                new Widget'(
-                                  Button_Widget,
-                                  (136, 89, 22, 16),
-                                  CURSOR_NORMAL,
-                                  new Handler'(button_handlers),
-                                  new Subbitmap'(subbmp_eject_up),
-                                  new Subbitmap'(subbmp_eject_down),
-                                  Cmd_Main_Eject'Access
-                                 ),
-                                new Widget'(
-                                  Background_Widget,
-                                  (26, 28, 26+9, 28+9),
-                                  CURSOR_NORMAL,
-                                  new Handler'(background_handlers),
-                                  null,
-                                  False
-                                 ),
-                                new Widget'(
-                                  T => Slider_Widget,
-                                  r => (107, 57, 68, 14),
-                                  c => CURSOR_NORMAL,
-                                  control => new Handler'(slider_handlers),
-                                  slider_background => new Subbitmap_Array'(volume_backgrounds),
-                                  slider_up => new Subbitmap'(subbmp_volume_bar_up),
-                                  slider_down => new Subbitmap'(subbmp_volume_bar_down),
-                                  slider_horizontal => True,
-                                  slider_min => 0,
-                                  slider_max => 51,
-                                  slider_value => 0,
-                                  slider_action => null
-                                 ),
-                                new Widget'(
-                                  T => Slider_Widget,
-                                  r => (177, 57, 38, 14),
-                                  c => CURSOR_NORMAL,
-                                  control => new Handler'(slider_handlers),
-                                  slider_background => new Subbitmap_Array'(balance_backgrounds),
-                                  slider_up => new Subbitmap'(subbmp_balance_bar_up),
-                                  slider_down => new Subbitmap'(subbmp_balance_bar_down),
-                                  slider_horizontal => True,
-                                  slider_min => 0,
-                                  slider_max => 24,
-                                  slider_value => 0,
-                                  slider_action => null
-                                 ),
-                                new Widget'(
-                                  Checkbox_Widget,
-                                  (219, 58, 23, 12),
-                                  CURSOR_NORMAL,
-                                  new Handler'(checkbox_handlers),
-                                  new Subbitmap'(subbmp_eq_on_up),
-                                  new Subbitmap'(subbmp_eq_on_down),
-                                  new Subbitmap'(subbmp_eq_off_up),
-                                  new Subbitmap'(subbmp_eq_off_down),
-                                  False,
-                                  Cmd_Main_Eq'Access
-                                 ),
-                                new Widget'(
-                                  Checkbox_Widget,
-                                  (219+23, 58, 23, 12),
-                                  CURSOR_NORMAL,
-                                  new Handler'(checkbox_handlers),
-                                  new Subbitmap'(subbmp_pl_on_up),
-                                  new Subbitmap'(subbmp_pl_on_down),
-                                  new Subbitmap'(subbmp_pl_off_up),
-                                  new Subbitmap'(subbmp_pl_off_down),
-                                  False,
-                                  Cmd_Main_Pl'Access
-                                 ),
-                                new Widget'(
-                                  Checkbox_Widget,
-                                  (165, 89, 46, 15),
-                                  CURSOR_NORMAL,
-                                  new Handler'(checkbox_handlers),
-                                  new Subbitmap'(subbmp_shuffle_on_up),
-                                  new Subbitmap'(subbmp_shuffle_on_down),
-                                  new Subbitmap'(subbmp_shuffle_off_up),
-                                  new Subbitmap'(subbmp_shuffle_off_down),
-                                  False,
-                                  Test_Checkbox'Access
-                                 ),
-                                new Widget'(
-                                  Checkbox_Widget,
-                                  (210, 89, 29, 15),
-                                  CURSOR_NORMAL,
-                                  new Handler'(checkbox_handlers),
-                                  new Subbitmap'(subbmp_repeat_on_up),
-                                  new Subbitmap'(subbmp_repeat_on_down),
-                                  new Subbitmap'(subbmp_repeat_off_up),
-                                  new Subbitmap'(subbmp_repeat_off_down),
-                                  False,
-                                  Test_Checkbox'Access
-                                 ),
-                                new Widget'(
-                                  T => Clutterbar_Widget,
-                                  r => (10, 22, 8, 43),
-                                  c => CURSOR_NORMAL,
-                                  control => new Handler'(clutterbar_handlers),
-                                  clutterbar_a_value => False,
-                                  clutterbar_d_value => False,
-                                  clutterbar_mouse_down => 0,
-                                  clutterbar_set_o => Clutterbar_Set_O'Access,
-                                  clutterbar_set_a => Clutterbar_Set_A'Access,
-                                  clutterbar_set_i => Clutterbar_Set_I'Access,
-                                  clutterbar_set_d => Clutterbar_Set_D'Access,
-                                  clutterbar_set_v => Clutterbar_Set_V'Access
-                                 ),
-                                new Widget'(
-                                  Song_Title_Widget,
-                                  (112, 27, 152, 6),
-                                  CURSOR_SONGNAME,
-                                  new Handler'(song_title_handlers),
-                                  new String'(" *** "),
-                                  0
-                                 ),
-                                new Widget'(
-                                  Scroll_Widget,
-                                  (16, 72, 248, 10),
-                                  CURSOR_NORMAL,
-                                  new Handler'(scroll_handlers),
-                                  new Subbitmap'(subbmp_posbar_background),
-                                  new Subbitmap'(subbmp_posbar_bar_up),
-                                  new Subbitmap'(subbmp_posbar_bar_down),
-                                  29,
-                                  0
-                                 )
-                               );
+   main_template : aliased Template :=
+     ((Background_Widget,
+      (0, 0, 275, 116),
+      CURSOR_NORMAL,
+      new Handler'(background_handlers),
+      new Subbitmap'(subbmp_main),
+      False),
+      (Background_Widget,
+       (0, 0, 275, 14),
+       CURSOR_TITLEBAR,
+       new Handler'(background_handlers),
+       new Subbitmap'(subbmp_title_bar_off),
+       False),
+      (Background_Widget,
+       (212, 41, 29, 12),
+       CURSOR_NORMAL,
+       new Handler'(background_handlers),
+       new Subbitmap'(subbmp_mono_off),
+       False),
+      (Background_Widget,
+       (939, 41, 29, 12),
+       CURSOR_NORMAL,
+       new Handler'(background_handlers),
+       new Subbitmap'(subbmp_stereo_off),
+       False),
+      (Background_Widget,
+       (26, 28, 9, 9),
+       CURSOR_NORMAL,
+       new Handler'(background_handlers),
+       new Subbitmap'(subbmp_status_stop),
+       False),
+      (Button_Widget,
+       (6, 3, 9, 9),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_options_up),
+       new Subbitmap'(subbmp_options_down),
+       Test_Button'Access),
+      (Button_Widget,
+       (244, 3, 9, 9),
+       CURSOR_MIN,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_minimize_up),
+       new Subbitmap'(subbmp_minimize_down),
+       Cmd_Main_Minimize'Access),
+      (Button_Widget,
+       (254, 3, 9, 9),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_maximize_normal_up),
+       new Subbitmap'(subbmp_maximize_normal_down),
+       Cmd_Main_Maximize'Access),
+      (Button_Widget,
+       (264, 3, 9, 9),
+       CURSOR_CLOSE,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_close_up),
+       new Subbitmap'(subbmp_close_down),
+       Cmd_Main_Close'Access),
+      (Button_Widget,
+       (16+23*0, 88, 23, 18),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_previous_up),
+       new Subbitmap'(subbmp_previous_down),
+       Cmd_Main_Previous'Access),
+      (Button_Widget,
+       (16+23*1-1, 88, 23, 18),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_play_up),
+       new Subbitmap'(subbmp_play_down),
+       Cmd_Main_Play'Access),
+      (Button_Widget,
+       (16+23*2-1, 88, 23, 18),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_pause_up),
+       new Subbitmap'(subbmp_pause_down),
+       Cmd_Main_Pause'Access),
+      (Button_Widget,
+       (16+23*3-1, 88, 23, 18),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_stop_up),
+       new Subbitmap'(subbmp_stop_down),
+       Cmd_Main_Stop'Access),
+      (Button_Widget,
+       (16+23*4-1, 88, 23, 18),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_next_up),
+       new Subbitmap'(subbmp_next_down),
+       Cmd_Main_Next'Access),
+      (Button_Widget,
+       (136, 89, 22, 16),
+       CURSOR_NORMAL,
+       new Handler'(button_handlers),
+       new Subbitmap'(subbmp_eject_up),
+       new Subbitmap'(subbmp_eject_down),
+       Cmd_Main_Eject'Access),
+      (Background_Widget,
+       (26, 28, 26+9, 28+9),
+       CURSOR_NORMAL,
+       new Handler'(background_handlers),
+       null,
+       False),
+      (T => Slider_Widget,
+       r => (107, 57, 68, 14),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(volume_backgrounds),
+       slider_up => new Subbitmap'(subbmp_volume_bar_up),
+       slider_down => new Subbitmap'(subbmp_volume_bar_down),
+       slider_horizontal => True,
+       slider_min => 0,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (177, 57, 38, 14),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(balance_backgrounds),
+       slider_up => new Subbitmap'(subbmp_balance_bar_up),
+       slider_down => new Subbitmap'(subbmp_balance_bar_down),
+       slider_horizontal => True,
+       slider_min => 0,
+       slider_max => 24,
+       slider_value => 0,
+       slider_action => null),
+      (Checkbox_Widget,
+       (219, 58, 23, 12),
+       CURSOR_NORMAL,
+       new Handler'(checkbox_handlers),
+       new Subbitmap'(subbmp_eq_on_up),
+       new Subbitmap'(subbmp_eq_on_down),
+       new Subbitmap'(subbmp_eq_off_up),
+       new Subbitmap'(subbmp_eq_off_down),
+       False,
+       Cmd_Main_Eq'Access),
+      (Checkbox_Widget,
+       (219+23, 58, 23, 12),
+       CURSOR_NORMAL,
+       new Handler'(checkbox_handlers),
+       new Subbitmap'(subbmp_pl_on_up),
+       new Subbitmap'(subbmp_pl_on_down),
+       new Subbitmap'(subbmp_pl_off_up),
+       new Subbitmap'(subbmp_pl_off_down),
+       False,
+       Cmd_Main_Pl'Access),
+      (Checkbox_Widget,
+       (165, 89, 46, 15),
+       CURSOR_NORMAL,
+       new Handler'(checkbox_handlers),
+       new Subbitmap'(subbmp_shuffle_on_up),
+       new Subbitmap'(subbmp_shuffle_on_down),
+       new Subbitmap'(subbmp_shuffle_off_up),
+       new Subbitmap'(subbmp_shuffle_off_down),
+       False,
+       Test_Checkbox'Access),
+      (Checkbox_Widget,
+       (210, 89, 29, 15),
+       CURSOR_NORMAL,
+       new Handler'(checkbox_handlers),
+       new Subbitmap'(subbmp_repeat_on_up),
+       new Subbitmap'(subbmp_repeat_on_down),
+       new Subbitmap'(subbmp_repeat_off_up),
+       new Subbitmap'(subbmp_repeat_off_down),
+       False,
+       Test_Checkbox'Access),
+      (T => Clutterbar_Widget,
+       r => (10, 22, 8, 43),
+       c => CURSOR_NORMAL,
+       control => new Handler'(clutterbar_handlers),
+       clutterbar_a_value => False,
+       clutterbar_d_value => False,
+       clutterbar_mouse_down => 0,
+       clutterbar_set_o => Clutterbar_Set_O'Access,
+       clutterbar_set_a => Clutterbar_Set_A'Access,
+       clutterbar_set_i => Clutterbar_Set_I'Access,
+       clutterbar_set_d => Clutterbar_Set_D'Access,
+       clutterbar_set_v => Clutterbar_Set_V'Access),
+      (Song_Title_Widget,
+       (112, 27, 152, 6),
+       CURSOR_SONGNAME,
+       new Handler'(song_title_handlers),
+       new String'(" *** "),
+       0),
+      (Scroll_Widget,
+       (16, 72, 248, 10),
+       CURSOR_NORMAL,
+       new Handler'(scroll_handlers),
+       new Subbitmap'(subbmp_posbar_background),
+       new Subbitmap'(subbmp_posbar_bar_up),
+       new Subbitmap'(subbmp_posbar_bar_down),
+       29,
+       0)
+     );
 
    -- TODO: missing template functions.
 
-   function Collision_Detection(X, Y : Integer; Temp : Template; Num_Controls : Natural) return access Widget
+   function Collision_Detection
+     (X, Y : Integer;
+      Temp : access Template;
+      Num_Controls : Natural)
+      return access Widget
    is
       R : Rect;
       wid : access Widget := null;
@@ -1430,7 +1382,7 @@ package body Overkill.Classic is
          if X >= r(1) and Y >= r(2)
            and X <= (r(1) + r(3)) and Y < (r(2) + r(4)) then
             Put_Line ("Collision with widget " & I'Image);
-            wid := Temp(I);
+            wid := Temp(I)'Access;
             exit;
          end if;
          I := I - 1;
@@ -1440,7 +1392,7 @@ package body Overkill.Classic is
 
    procedure Template_Mouse_Down
      (win : Window_Type;
-      Temp : Template;
+      Temp : access Template;
       X, Y : Integer)
    is
       wid : access Widget;
@@ -1454,7 +1406,7 @@ package body Overkill.Classic is
 
    procedure Template_Mouse_Up
      (win : Window_Type;
-      Temp : Template;
+      Temp : access Template;
       X, Y : Integer)
    is
       wid : access Widget;
@@ -1473,7 +1425,7 @@ package body Overkill.Classic is
 
    procedure Template_Mouse_Move
      (win : Window_Type;
-      Temp : Template;
+      Temp : access Template;
       X, Y : Integer)
    is
       wid : access Widget;
@@ -1491,11 +1443,11 @@ package body Overkill.Classic is
       end if;
    end Template_Mouse_Move;
 
-   procedure Template_Draw(win : Window_Type; temp : Template) is
+   procedure Template_Draw(win : Window_Type; temp : in out Template) is
    begin
       gui.gui.begin_drawing(win);
       for I in main_template'Range loop
-         temp(I).control.draw(temp(I), win);
+         temp(I).control.draw(temp(I)'Access, win);
       end loop;
       gui.gui.end_drawing.all;
    end Template_Draw;
@@ -1514,7 +1466,7 @@ package body Overkill.Classic is
          Y2 := Y;
       end if;
 
-      Template_Mouse_Down(w1, main_template, X2, Y2);
+      Template_Mouse_Down(w1, main_template'Access, X2, Y2);
    end Main_Mouse_Down;
 
    procedure Main_Mouse_Up(x, y : Integer)
@@ -1529,7 +1481,7 @@ package body Overkill.Classic is
          Y2 := Y;
       end if;
 
-      Template_Mouse_Up(w1, main_template, X2, Y2);
+      Template_Mouse_Up(w1, main_template'Access, X2, Y2);
    end Main_Mouse_Up;
 
    procedure Main_Mouse_Move(x, y : Integer)
@@ -1544,7 +1496,7 @@ package body Overkill.Classic is
          Y2 := Y;
       end if;
 
-      Template_Mouse_Move(w1, main_template, X2, Y2);
+      Template_Mouse_Move(w1, main_template'Access, X2, Y2);
    end Main_Mouse_Move;
 
    procedure Main_Draw is
