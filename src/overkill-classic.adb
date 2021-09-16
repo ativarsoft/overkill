@@ -946,7 +946,7 @@ package body Overkill.Classic is
          Draw_Pixmap_Double(bar, r(1) + wid.slider_value + wid.slider_min, r(2) + 1, 14, 11);
          null;
       else
-         Draw_Pixmap_Double(bar, r(1) + 1, r(2) + r(4) - 13 + wid.slider_value, 11, 11);
+         Draw_Pixmap_Double(bar, r(1) + 1, r(2) + r(4) - 13 - wid.slider_value, 11, 11);
       end if;
    end Slider_Draw;
 
