@@ -640,11 +640,10 @@ package body Overkill.Classic is
       capture := null;
    end Release_Mouse;
 
-   procedure Draw_Pixmap(
-                         subbmp : access Subbitmap;
-                         dst_x, dst_y : Integer;
-                         w, h : Integer
-                        )
+   procedure Draw_Pixmap
+     (subbmp : access Subbitmap;
+      dst_x, dst_y : Integer;
+      w, h : Integer)
    is
       id : Integer;
    begin
@@ -654,11 +653,10 @@ package body Overkill.Classic is
       end if;
    end Draw_Pixmap;
 
-   procedure Draw_Pixmap_Double(
-                                subbmp : access constant Subbitmap;
-                                dst_x, dst_y : Integer;
-                                w, h : Integer
-                               )
+   procedure Draw_Pixmap_Double
+     (subbmp : access constant Subbitmap;
+      dst_x, dst_y : Integer;
+      w, h : Integer)
    is
       id : Integer;
    begin
@@ -672,12 +670,11 @@ package body Overkill.Classic is
       end if;
    end Draw_Pixmap_Double;
 
-   procedure Draw_Pixmap_Loop_Horizontal(
-                                         subbmp : access Subbitmap;
-                                         dst_x, dst_y : Integer;
-                                         src_w, src_h : Integer;
-                                         dst_w : Integer
-                                        )
+   procedure Draw_Pixmap_Loop_Horizontal
+     (subbmp : access Subbitmap;
+      dst_x, dst_y : Integer;
+      src_w, src_h : Integer;
+      dst_w : Integer)
    is
       I : Integer := 0;
    begin
@@ -687,12 +684,11 @@ package body Overkill.Classic is
       end loop;
    end Draw_Pixmap_Loop_Horizontal;
 
-   procedure Draw_Pixmap_Loop_Vertical(
-                                       subbmp : access Subbitmap;
-                                       dst_x, dst_y : Integer;
-                                       src_w, src_h : Integer;
-                                       dst_h : Integer
-                                      )
+   procedure Draw_Pixmap_Loop_Vertical
+     (subbmp : access Subbitmap;
+      dst_x, dst_y : Integer;
+      src_w, src_h : Integer;
+      dst_h : Integer)
    is
       I : Integer := 0;
    begin
@@ -724,11 +720,10 @@ package body Overkill.Classic is
       end if;
    end Background_Mouse_Up;
 
-   procedure Background_Mouse_Move(
-                                   wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                  )
+   procedure Background_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
    is
       A, B : Integer;
    begin
@@ -753,21 +748,19 @@ package body Overkill.Classic is
       Draw_Pixmap_Double(wid.subbmp, r(1), r(2), r(3), r(4));
    end Background_Draw;
 
-   procedure Button_Mouse_Down(
-                               wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                              ) is
+   procedure Button_Mouse_Down
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       Capture_Mouse (win, wid);
       gui.gui.redraw_window (win);
    end Button_Mouse_Down;
 
-   procedure Button_Mouse_Up(
-                             wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                            ) is
+   procedure Button_Mouse_Up
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       if Capture = wid then
          Release_Mouse;
@@ -781,11 +774,10 @@ package body Overkill.Classic is
       end if;
    end Button_Mouse_Up;
 
-   procedure Button_Mouse_Move(
-                              wid : access Widget;
-                                   win : Window_Type;
-                               X, Y : Integer
-                              ) is
+   procedure Button_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Button_Mouse_Move;
@@ -1103,67 +1095,67 @@ package body Overkill.Classic is
                                           draw => Scroll_Draw'Access
                                          );
 
-   volume_backgrounds : constant Subbitmap_Array := (
-                                                     new Subbitmap'(subbmp_volume_bg1),
-                                                     new Subbitmap'(subbmp_volume_bg2),
-                                                     new Subbitmap'(subbmp_volume_bg3),
-                                                     new Subbitmap'(subbmp_volume_bg4),
-                                                     new Subbitmap'(subbmp_volume_bg5),
-                                                     new Subbitmap'(subbmp_volume_bg6),
-                                                     new Subbitmap'(subbmp_volume_bg7),
-                                                     new Subbitmap'(subbmp_volume_bg8),
-                                                     new Subbitmap'(subbmp_volume_bg9),
-                                                     new Subbitmap'(subbmp_volume_bg10),
-                                                     new Subbitmap'(subbmp_volume_bg11),
-                                                     new Subbitmap'(subbmp_volume_bg12),
-                                                     new Subbitmap'(subbmp_volume_bg13),
-                                                     new Subbitmap'(subbmp_volume_bg14),
-                                                     new Subbitmap'(subbmp_volume_bg15),
-                                                     new Subbitmap'(subbmp_volume_bg16),
-                                                     new Subbitmap'(subbmp_volume_bg17),
-                                                     new Subbitmap'(subbmp_volume_bg18),
-                                                     new Subbitmap'(subbmp_volume_bg19),
-                                                     new Subbitmap'(subbmp_volume_bg20),
-                                                     new Subbitmap'(subbmp_volume_bg21),
-                                                     new Subbitmap'(subbmp_volume_bg22),
-                                                     new Subbitmap'(subbmp_volume_bg23),
-                                                     new Subbitmap'(subbmp_volume_bg24),
-                                                     new Subbitmap'(subbmp_volume_bg25),
-                                                     new Subbitmap'(subbmp_volume_bg26),
-                                                     new Subbitmap'(subbmp_volume_bg27),
-                                                     new Subbitmap'(subbmp_volume_bg28)
-                                                    );
+   volume_backgrounds : constant Subbitmap_Array :=
+     (new Subbitmap'(subbmp_volume_bg1),
+      new Subbitmap'(subbmp_volume_bg2),
+      new Subbitmap'(subbmp_volume_bg3),
+      new Subbitmap'(subbmp_volume_bg4),
+      new Subbitmap'(subbmp_volume_bg5),
+      new Subbitmap'(subbmp_volume_bg6),
+      new Subbitmap'(subbmp_volume_bg7),
+      new Subbitmap'(subbmp_volume_bg8),
+      new Subbitmap'(subbmp_volume_bg9),
+      new Subbitmap'(subbmp_volume_bg10),
+      new Subbitmap'(subbmp_volume_bg11),
+      new Subbitmap'(subbmp_volume_bg12),
+      new Subbitmap'(subbmp_volume_bg13),
+      new Subbitmap'(subbmp_volume_bg14),
+      new Subbitmap'(subbmp_volume_bg15),
+      new Subbitmap'(subbmp_volume_bg16),
+      new Subbitmap'(subbmp_volume_bg17),
+      new Subbitmap'(subbmp_volume_bg18),
+      new Subbitmap'(subbmp_volume_bg19),
+      new Subbitmap'(subbmp_volume_bg20),
+      new Subbitmap'(subbmp_volume_bg21),
+      new Subbitmap'(subbmp_volume_bg22),
+      new Subbitmap'(subbmp_volume_bg23),
+      new Subbitmap'(subbmp_volume_bg24),
+      new Subbitmap'(subbmp_volume_bg25),
+      new Subbitmap'(subbmp_volume_bg26),
+      new Subbitmap'(subbmp_volume_bg27),
+      new Subbitmap'(subbmp_volume_bg28)
+     );
 
-   balance_backgrounds : constant Subbitmap_Array := (
-                                                      new Subbitmap'(subbmp_balance_bg28),
-                                                      new Subbitmap'(subbmp_balance_bg26),
-                                                      new Subbitmap'(subbmp_balance_bg24),
-                                                      new Subbitmap'(subbmp_balance_bg22),
-                                                      new Subbitmap'(subbmp_balance_bg20),
-                                                      new Subbitmap'(subbmp_balance_bg18),
-                                                      new Subbitmap'(subbmp_balance_bg16),
-                                                      new Subbitmap'(subbmp_balance_bg14),
-                                                      new Subbitmap'(subbmp_balance_bg12),
-                                                      new Subbitmap'(subbmp_balance_bg10),
-                                                      new Subbitmap'(subbmp_balance_bg8),
-                                                      new Subbitmap'(subbmp_balance_bg6),
-                                                      new Subbitmap'(subbmp_balance_bg4),
-                                                      new Subbitmap'(subbmp_balance_bg1),
-                                                      new Subbitmap'(subbmp_balance_bg2),
-                                                      new Subbitmap'(subbmp_balance_bg4),
-                                                      new Subbitmap'(subbmp_balance_bg6),
-                                                      new Subbitmap'(subbmp_balance_bg8),
-                                                      new Subbitmap'(subbmp_balance_bg10),
-                                                      new Subbitmap'(subbmp_balance_bg12),
-                                                      new Subbitmap'(subbmp_balance_bg14),
-                                                      new Subbitmap'(subbmp_balance_bg16),
-                                                      new Subbitmap'(subbmp_balance_bg18),
-                                                      new Subbitmap'(subbmp_balance_bg20),
-                                                      new Subbitmap'(subbmp_balance_bg22),
-                                                      new Subbitmap'(subbmp_balance_bg24),
-                                                      new Subbitmap'(subbmp_balance_bg26),
-                                                      new Subbitmap'(subbmp_balance_bg28)
-                                                     );
+   balance_backgrounds : constant Subbitmap_Array :=
+     (new Subbitmap'(subbmp_balance_bg28),
+      new Subbitmap'(subbmp_balance_bg26),
+      new Subbitmap'(subbmp_balance_bg24),
+      new Subbitmap'(subbmp_balance_bg22),
+      new Subbitmap'(subbmp_balance_bg20),
+      new Subbitmap'(subbmp_balance_bg18),
+      new Subbitmap'(subbmp_balance_bg16),
+      new Subbitmap'(subbmp_balance_bg14),
+      new Subbitmap'(subbmp_balance_bg12),
+      new Subbitmap'(subbmp_balance_bg10),
+      new Subbitmap'(subbmp_balance_bg8),
+      new Subbitmap'(subbmp_balance_bg6),
+      new Subbitmap'(subbmp_balance_bg4),
+      new Subbitmap'(subbmp_balance_bg1),
+      new Subbitmap'(subbmp_balance_bg2),
+      new Subbitmap'(subbmp_balance_bg4),
+      new Subbitmap'(subbmp_balance_bg6),
+      new Subbitmap'(subbmp_balance_bg8),
+      new Subbitmap'(subbmp_balance_bg10),
+      new Subbitmap'(subbmp_balance_bg12),
+      new Subbitmap'(subbmp_balance_bg14),
+      new Subbitmap'(subbmp_balance_bg16),
+      new Subbitmap'(subbmp_balance_bg18),
+      new Subbitmap'(subbmp_balance_bg20),
+      new Subbitmap'(subbmp_balance_bg22),
+      new Subbitmap'(subbmp_balance_bg24),
+      new Subbitmap'(subbmp_balance_bg26),
+      new Subbitmap'(subbmp_balance_bg28)
+     );
 
    main_template : aliased Template :=
      ((Background_Widget,
@@ -1365,6 +1357,250 @@ package body Overkill.Classic is
        0)
      );
 
+   procedure cmd_eq_close is
+   begin
+      null;
+   end cmd_eq_close;
+
+   procedure cmd_eq_maximize is
+   begin
+      null;
+   end cmd_eq_maximize;
+
+   procedure test_checkbox is
+   begin
+      null;
+   end test_checkbox;
+
+   procedure cmd_eq_presets is
+   begin
+      null;
+   end cmd_eq_presets;
+
+   eq_slider_backgrounds : Subbitmap_Array :=
+     (new Subbitmap'(subbmp_eq_slider_bg1),
+      new Subbitmap'(subbmp_eq_slider_bg2),
+      new Subbitmap'(subbmp_eq_slider_bg3),
+      new Subbitmap'(subbmp_eq_slider_bg4),
+      new Subbitmap'(subbmp_eq_slider_bg5),
+      new Subbitmap'(subbmp_eq_slider_bg6),
+      new Subbitmap'(subbmp_eq_slider_bg7),
+      new Subbitmap'(subbmp_eq_slider_bg8),
+      new Subbitmap'(subbmp_eq_slider_bg9),
+      new Subbitmap'(subbmp_eq_slider_bg10),
+      new Subbitmap'(subbmp_eq_slider_bg11),
+      new Subbitmap'(subbmp_eq_slider_bg12),
+      new Subbitmap'(subbmp_eq_slider_bg13),
+      new Subbitmap'(subbmp_eq_slider_bg14),
+      new Subbitmap'(subbmp_eq_slider_bg15),
+      new Subbitmap'(subbmp_eq_slider_bg16),
+      new Subbitmap'(subbmp_eq_slider_bg17),
+      new Subbitmap'(subbmp_eq_slider_bg18),
+      new Subbitmap'(subbmp_eq_slider_bg19),
+      new Subbitmap'(subbmp_eq_slider_bg20),
+      new Subbitmap'(subbmp_eq_slider_bg21),
+      new Subbitmap'(subbmp_eq_slider_bg22),
+      new Subbitmap'(subbmp_eq_slider_bg23),
+      new Subbitmap'(subbmp_eq_slider_bg24),
+      new Subbitmap'(subbmp_eq_slider_bg25),
+      new Subbitmap'(subbmp_eq_slider_bg26),
+      new Subbitmap'(subbmp_eq_slider_bg27),
+      new Subbitmap'(subbmp_eq_slider_bg28)
+     );
+
+   equalizer_template : aliased Template :=
+     -- background
+     ((T => Background_Widget,
+       r => (0, 0, 275, 116),
+       c => CURSOR_NORMAL,
+       control => new Handler'(background_handlers),
+       subbmp => new Subbitmap' (subbmp_eq_background),
+       move_window => False),
+      -- title bar
+      (T => Background_Widget,
+       r => (0, 0, 275, 14),
+       c => CURSOR_NORMAL,
+       control => new Handler'(background_handlers),
+       subbmp => new Subbitmap'(subbmp_eq_title_bar_off),
+       move_window => False),
+      (T => Button_Widget,
+       r => (254, 3, 9, 9),
+       c => CURSOR_NORMAL,
+       control => new Handler'(button_handlers),
+       button_up => new Subbitmap'(subbmp_maximize_normal_up),
+       button_down => new Subbitmap'(subbmp_maximize_normal_down),
+       button_action => cmd_eq_maximize'Access),
+      (T => Button_Widget,
+       r => (264, 3, 9, 9),
+       c => CURSOR_CLOSE,
+       control => new Handler'(button_handlers),
+       button_up => new Subbitmap'(subbmp_close_up),
+       button_down => new Subbitmap'(subbmp_close_down),
+       button_action => cmd_eq_close'Access),
+      -- on auto buttons
+      (T => Checkbox_Widget,
+       r => (14, 18, 26, 12),
+       c => CURSOR_NORMAL,
+       control => new Handler'(checkbox_handlers),
+       checkbox_on_up => new Subbitmap'(subbmp_eq_on_on_up),
+       checkbox_on_down => new Subbitmap'(subbmp_eq_on_on_down),
+       checkbox_off_up => new Subbitmap'(subbmp_eq_on_off_up),
+       checkbox_off_down => new Subbitmap'(subbmp_eq_on_off_down),
+       checkbox_action => test_checkbox'Access,
+       checkbox_checked => False),
+      (T => Checkbox_Widget,
+       r => (40, 18, 32, 12),
+       c => CURSOR_NORMAL,
+       control => new Handler'(checkbox_handlers),
+       checkbox_on_up => new Subbitmap'(subbmp_eq_auto_on_up),
+       checkbox_on_down => new Subbitmap'(subbmp_eq_auto_on_down),
+       checkbox_off_up => new Subbitmap'(subbmp_eq_auto_off_up),
+       checkbox_off_down => new Subbitmap'(subbmp_eq_auto_off_down),
+       checkbox_action => test_checkbox'Access,
+       checkbox_checked => False),
+      -- presets button
+      (T => Button_Widget,
+       r => (217, 18, 44, 12),
+       c => CURSOR_NORMAL,
+       control => new Handler'(button_handlers),
+       button_up => new Subbitmap'(subbmp_eq_presets_up),
+       button_down => new Subbitmap'(subbmp_eq_presets_down),
+       button_action => cmd_eq_presets'Access),
+      -- preamp
+      (T => Slider_Widget,
+       r => (21, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*0, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*1, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*2, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*3, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*4, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*5, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*6, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*7, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*8, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null),
+      (T => Slider_Widget,
+       r => (78+18*9, 38, 14, 64),
+       c => CURSOR_NORMAL,
+       control => new Handler'(slider_handlers),
+       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
+       slider_up => new Subbitmap'(subbmp_eq_slider_up),
+       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       slider_horizontal => false,
+       slider_min => 2,
+       slider_max => 51,
+       slider_value => 0,
+       slider_action => null)
+     );
+
    -- TODO: missing template functions.
 
    function Collision_Detection
@@ -1446,7 +1682,7 @@ package body Overkill.Classic is
    procedure Template_Draw(win : Window_Type; temp : in out Template) is
    begin
       gui.gui.begin_drawing(win);
-      for I in main_template'Range loop
+      for I in temp'Range loop
          temp(I).control.draw(temp(I)'Access, win);
       end loop;
       gui.gui.end_drawing.all;
@@ -1505,11 +1741,70 @@ package body Overkill.Classic is
       template_draw(w1, main_template);
    end Main_Draw;
 
+   procedure Equalizer_Mouse_Down(x, y : Integer)
+   is
+      X2, Y2 : Integer;
+   begin
+      if double_size then
+         X2 := X / 2;
+         Y2 := Y / 2;
+      else
+         X2 := X;
+         Y2 := Y;
+      end if;
+
+      Template_Mouse_Down(w2, equalizer_template'Access, X2, Y2);
+   end Equalizer_Mouse_Down;
+
+   procedure Equalizer_Mouse_Up(x, y : Integer)
+   is
+      X2, Y2 : Integer;
+   begin
+      if double_size then
+         X2 := X / 2;
+         Y2 := Y / 2;
+      else
+         X2 := X;
+         Y2 := Y;
+      end if;
+
+      Template_Mouse_Up(w2, equalizer_template'Access, X2, Y2);
+   end Equalizer_Mouse_Up;
+
+   procedure Equalizer_Mouse_Move(x, y : Integer)
+   is
+      X2, Y2 : Integer;
+   begin
+      if double_size then
+         X2 := x / 2;
+         Y2 := y / 2;
+      else
+         X2 := X;
+         Y2 := Y;
+      end if;
+
+      Template_Mouse_Move(w2, equalizer_template'Access, X2, Y2);
+   end Equalizer_Mouse_Move;
+
+   procedure Equalizer_Draw is
+   begin
+      Put_Line("equalizer: draw");
+      template_draw(w2, equalizer_template);
+   end Equalizer_Draw;
+
    main_callbacks : Skin_Callbacks :=
      (mouse_down => Main_Mouse_Down'Access,
       mouse_up => Main_Mouse_Up'Access,
       mouse_move => Main_Mouse_Move'Access,
       draw => Main_Draw'Access,
+      focus => null,
+      resize => null);
+
+   equalizer_callbacks : aliased Skin_Callbacks :=
+     (mouse_down => Equalizer_Mouse_Down'Access,
+      mouse_up => Equalizer_Mouse_Up'Access,
+      mouse_move => Equalizer_Mouse_Move'Access,
+      draw => Equalizer_Draw'Access,
       focus => null,
       resize => null);
 
@@ -1527,7 +1822,7 @@ package body Overkill.Classic is
          raise Program_Error with "Failed to create Main Window.";
       end if;
       main_window := w1;
-      w2 := Skin.GUI.create_window (0, 116, 275, 116, "Equalizer", null);
+      w2 := Skin.GUI.create_window (0, 116, 275, 116, "Equalizer", equalizer_callbacks'Access);
       if w2 = null then
          raise Program_Error with "Failed to create Equalizer Window.";
       end if;
@@ -1553,7 +1848,7 @@ package body Overkill.Classic is
       -- ShowWindow might be ignored the first time it's called on win32
       Skin.GUI.show_window (w1);
       Skin.GUI.show_window (w1);
-      --Skin.GUI.show_window (w2);
+      Skin.GUI.show_window (w2);
       --Skin.GUI.show_window (w3);
    end New_Classic;
 
