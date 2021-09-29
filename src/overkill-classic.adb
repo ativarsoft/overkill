@@ -69,7 +69,7 @@ package body Overkill.Classic is
       X, Y : Natural;
    end record;
 
-   type Subbitmap_Array is array (Natural range <>) of access Subbitmap;
+   type Subbitmap_Array is array (Natural range <>) of access constant Subbitmap;
 
    type Rect is array (1..4) of Natural;
 
@@ -82,7 +82,10 @@ package body Overkill.Classic is
       Slider_Widget,
       Clutterbar_Widget,
       Song_Title_Widget,
-      Scroll_Widget);
+      Scroll_Widget,
+      Menu_Widget,
+      Resizeable_Background_Widget,
+      Pledit_Widget);
 
    type Button_Action_Func is access procedure;
    type Checkbox_Action_Func is access procedure (checked : Boolean);
@@ -95,7 +98,7 @@ package body Overkill.Classic is
    type Clutterbar_V is access procedure;
 
    type Widget(T : Widget_Type := Background_Widget) is record
-      r : Rect;
+      r : aliased Rect;
       c : Cursor;
       control : access constant Handler;
       case T is
@@ -103,20 +106,20 @@ package body Overkill.Classic is
             subbmp : access constant Subbitmap;
             move_window : Boolean;
          when Button_Widget =>
-            button_up : access Subbitmap;
-            button_down : access Subbitmap;
+            button_up : access constant Subbitmap;
+            button_down : access constant Subbitmap;
             button_action : Button_Action_Func;
          when Checkbox_Widget =>
-            checkbox_on_up : access Subbitmap;
-            checkbox_on_down : access Subbitmap;
-            checkbox_off_up : access Subbitmap;
-            checkbox_off_down : access Subbitmap;
+            checkbox_on_up : access constant Subbitmap;
+            checkbox_on_down : access constant Subbitmap;
+            checkbox_off_up : access constant Subbitmap;
+            checkbox_off_down : access constant Subbitmap;
             checkbox_checked : Boolean;
             checkbox_action : Checkbox_Action_Func;
          when Slider_Widget =>
             slider_background : access constant Subbitmap_Array;
-            slider_up : access Subbitmap;
-            slider_down : access Subbitmap;
+            slider_up : access constant Subbitmap;
+            slider_down : access constant Subbitmap;
             slider_horizontal : Boolean;
             slider_min : Natural;
             slider_max : Natural;
@@ -135,11 +138,32 @@ package body Overkill.Classic is
             song_title_string : access String;
             song_title_offset : Integer;
          when Scroll_Widget =>
-            scroll_background : access Subbitmap;
-            scroll_bar_up : access Subbitmap;
-            scroll_bar_down : access Subbitmap;
+            scroll_background : access constant Subbitmap;
+            scroll_bar_up : access constant Subbitmap;
+            scroll_bar_down : access constant Subbitmap;
             scroll_bar_length : Natural;
             scroll_value : Natural;
+         when Menu_Widget =>
+            Menu_Num_Buttons : Natural;
+            Menu_Buttons_Up : access constant Subbitmap_Array;
+            Menu_Buttons_Down : access constant Subbitmap_Array;
+            Menu_Bar : access constant Subbitmap;
+         when Resizeable_Background_Widget =>
+            RB_top_left : access constant Subbitmap;
+            RB_title : access constant Subbitmap;
+            RB_top : access constant Subbitmap;
+            RB_top_right : access constant Subbitmap;
+            RB_left : access constant Subbitmap;
+            RB_right : access constant Subbitmap;
+            RB_bottom : access constant Subbitmap;
+            RB_bottom_left : access constant Subbitmap;
+            RB_bottom_right : access constant Subbitmap;
+            RB_length_top : Natural;
+            RB_length_left : Natural;
+            RB_length_right : Natural;
+            RB_length_bottom : Natural;
+         when Pledit_Widget =>
+            null;
       end case;
    end record;
 
@@ -203,56 +227,105 @@ package body Overkill.Classic is
       value : Integer;
    end record;
 
-   bmp_files : array (Natural range <>) of access String :=
-     (new String'("BALANCE.BMP"),
-      new String'("CBUTTONS.BMP"),
-      new String'("EQ_EX.BMP"),
-      new String'("EQMAIN.BMP"),
-      new String'("EQMAIN_ISO.BMP"),
-      new String'("GEN.BMP"),
-      new String'("GENEX.BMP"),
-      new String'("MAIN.BMP"),
-      new String'("MB.BMP"),
-      new String'("MONOSTER.BMP"),
-      new String'("NUMBERS.BMP"),
-      new String'("NUMS_EX.BMP"),
-      new String'("PLAYPAUS.BMP"),
-      new String'("PLEDIT.BMP"),
-      new String'("POSBAR.BMP"),
-      new String'("SHUFREP.BMP"),
-      new String'("TEXT.BMP"),
-      new String'("TITLEBAR.BMP"),
-      new String'("VIDEO.BMP"),
-      new String'("VOLUME.BMP"));
+   BALANCE_BMP : aliased constant String := "BALANCE.BMP";
+   CBUTTONS_BMP : aliased constant String := "CBUTTONS.BMP";
+   EQ_EX_BMP : aliased constant String := "EQ_EX.BMP";
+   EQMAIN_BMP : aliased constant String := "EQMAIN.BMP";
+   EQMAIN_ISO_BMP : aliased constant String := "EQMAIN_ISO.BMP";
+   GEN_BMP : aliased constant String := "GEN.BMP";
+   GENEX_BMP : aliased constant String := "GENEX.BMP";
+   MAIN_BMP : aliased constant String := "MAIN.BMP";
+   MB_BMP : aliased constant String := "MB.BMP";
+   MONOSTER_BMP : aliased constant String := "MONOSTER.BMP";
+   NUMBERS_BMP : aliased constant String := "NUMBERS.BMP";
+   NUMS_EX_BMP : aliased constant String := "NUMS_EX.BMP";
+   PLAYPAUS_BMP : aliased constant String := "PLAYPAUS.BMP";
+   PLEDIT_BMP : aliased constant String := "PLEDIT.BMP";
+   POSBAR_BMP : aliased constant String := "POSBAR.BMP";
+   SHUFREP_BMP : aliased constant String := "SHUFREP.BMP";
+   TEXT_BMP : aliased constant String := "TEXT.BMP";
+   TITLEBAR_BMP : aliased constant String := "TITLEBAR.BMP";
+   VIDEO_BMP : aliased constant String := "VIDEO.BMP";
+   VOLUME_BMP : aliased constant String := "VOLUME.BMP";
+
+   bmp_files : array (Natural range <>) of access constant String :=
+     (BALANCE_BMP'Access,
+      CBUTTONS_BMP'Access,
+      EQ_EX_BMP'Access,
+      EQMAIN_BMP'Access,
+      EQMAIN_ISO_BMP'Access,
+      GEN_BMP'Access,
+      GENEX_BMP'Access,
+      MAIN_BMP'Access,
+      MB_BMP'Access,
+      MONOSTER_BMP'Access,
+      NUMBERS_BMP'Access,
+      NUMS_EX_BMP'Access,
+      PLAYPAUS_BMP'Access,
+      PLEDIT_BMP'Access,
+      POSBAR_BMP'Access,
+      SHUFREP_BMP'Access,
+      TEXT_BMP'Access,
+      TITLEBAR_BMP'Access,
+      VIDEO_BMP'Access,
+      VOLUME_BMP'Access);
+
+   CLOSE_CUR : aliased constant String := "CLOSE.CUR";
+   EQCLOSE_CUR : aliased constant String := "EQCLOSE.CUR";
+   EQNORMAL_CUR : aliased constant String := "EQNORMAL.CUR";
+   EQSLID_CUR : aliased constant String := "EQSLID.CUR";
+   EQTITLE_CUR : aliased constant String := "EQTITLE.CUR";
+   MAINMENU_CUR : aliased constant String := "MAINMENU.CUR";
+   MIN_CUR : aliased constant String := "MIN.CUR";
+   NORMAL_CUR : aliased constant String := "NORMAL.CUR";
+   PCLOSE_CUR : aliased constant String := "PCLOSE.CUR";
+   PNORMAL_CUR : aliased constant String := "PNORMAL.CUR";
+   POSBAR_CUR : aliased constant String := "POSBAR.CUR";
+   PSIZE_CUR : aliased constant String := "PSIZE.CUR";
+   PTBAR_CUR : aliased constant String := "PTBAR.CUR";
+   PVSCROLL_CUR : aliased constant String := "PVSCROLL.CUR";
+   PWINBUT_CUR : aliased constant String := "PWINBUT.CUR";
+   PWSNORM_CUR : aliased constant String := "PWSNORM.CUR";
+   PWSSIZE_CUR : aliased constant String := "PWSSIZE.CUR";
+   SONGNAME_CUR : aliased constant String := "SONGNAME.CUR";
+   TITLEBAR_CUR : aliased constant String := "TITLEBAR.CUR";
+   VOLBAL_CUR : aliased constant String := "VOLBAL.CUR";
+   VOLBAR_CUR : aliased constant String := "VOLBAR.CUR";
+   WINBUT_CUR : aliased constant String := "WINBUT.CUR";
+   WSCLOSE_CUR : aliased constant String := "WSCLOSE.CUR";
+   WSMIN_CUR : aliased constant String := "WSMIN.CUR";
+   WSNORMAL_CUR : aliased constant String := "WSNORMAL.CUR";
+   WSPOSBAR_CUR : aliased constant String := "WSPOSBAR.CUR";
+   WSWINBUT_CUR : aliased constant String := "WSWINBUT.CUR";
 
    cursor_files : constant array (Natural range <>) of access constant String :=
-     (new String'("CLOSE.CUR"),
-      new String'("EQCLOSE.CUR"),
-      new String'("EQNORMAL.CUR"),
-      new String'("EQSLID.CUR"),
-      new String'("EQTITLE.CUR"),
-      new String'("MAINMENU.CUR"),
-      new String'("MIN.CUR"),
-      new String'("NORMAL.CUR"),
-      new String'("PCLOSE.CUR"),
-      new String'("PNORMAL.CUR"),
-      new String'("POSBAR.CUR"),
-      new String'("PSIZE.CUR"),
-      new String'("PTBAR.CUR"),
-      new String'("PVSCROLL.CUR"),
-      new String'("PWINBUT.CUR"),
-      new String'("PWSNORM.CUR"),
-      new String'("PWSSIZE.CUR"),
-      new String'("SONGNAME.CUR"),
-      new String'("TITLEBAR.CUR"),
-      new String'("VOLBAL.CUR"),
-      new String'("VOLBAR.CUR"),
-      new String'("WINBUT.CUR"),
-      new String'("WSCLOSE.CUR"),
-      new String'("WSMIN.CUR"),
-      new String'("WSNORMAL.CUR"),
-      new String'("WSPOSBAR.CUR"),
-      new String'("WSWINBUT.CUR"));
+     (CLOSE_CUR'Access,
+      EQCLOSE_CUR'Access,
+      EQNORMAL_CUR'Access,
+      EQSLID_CUR'Access,
+      EQTITLE_CUR'Access,
+      MAINMENU_CUR'Access,
+      MIN_CUR'Access,
+      NORMAL_CUR'Access,
+      PCLOSE_CUR'Access,
+      PNORMAL_CUR'Access,
+      POSBAR_CUR'Access,
+      PSIZE_CUR'Access,
+      PTBAR_CUR'Access,
+      PVSCROLL_CUR'Access,
+      PWINBUT_CUR'Access,
+      PWSNORM_CUR'Access,
+      PWSSIZE_CUR'Access,
+      SONGNAME_CUR'Access,
+      TITLEBAR_CUR'Access,
+      VOLBAL_CUR'Access,
+      VOLBAR_CUR'Access,
+      WINBUT_CUR'Access,
+      WSCLOSE_CUR'Access,
+      WSMIN_CUR'Access,
+      WSNORMAL_CUR'Access,
+      WSPOSBAR_CUR'Access,
+      WSWINBUT_CUR'Access);
 
    w1 : Window_Type;
    w2 : Window_Type;
@@ -269,235 +342,235 @@ package body Overkill.Classic is
    eq_shade : Boolean := False;
    pl_shade : Boolean := False;
 
-   subbmp_main : constant Subbitmap := (Bitmap'Pos(BMP_MAIN), 0, 0);
-   subbmp_title_bar_on : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 0);
-   subbmp_title_bar_off : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 15);
-   subbmp_title_bar_shade_on : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 29);
-   subbmp_title_bar_shade_off : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 42);
-   subbmp_title_bar_easter_on : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 57);
-   subbmp_title_bar_easter_off : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 72);
-   subbmp_a : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 0);
-   subbmp_mono_on : constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 29, 0);
-   subbmp_mono_off : constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 29, 12);
-   subbmp_stereo_on : constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 0, 0);
-   subbmp_stereo_off : constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 0, 12);
-   subbmp_previous_up : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 0, 0);
-   subbmp_previous_down : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 0, 18);
-   subbmp_play_up : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*0, 0);
-   subbmp_play_down : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*0, 18);
-   subbmp_pause_up : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*1, 0);
-   subbmp_pause_down : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*1, 18);
-   subbmp_stop_up : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*2, 0);
-   subbmp_stop_down : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*2, 18);
-   subbmp_next_up : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*3, 0);
-   subbmp_next_down : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*3, 18);
-   subbmp_eject_up : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*4, 0);
-   subbmp_eject_down : constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*4, 16);
-   subbmp_status : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 9*2, 0);
-   subbmp_volume_bg1 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*0);
-   subbmp_volume_bg2 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*1);
-   subbmp_volume_bg3 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*2);
-   subbmp_volume_bg4 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*3);
-   subbmp_volume_bg5 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*4);
-   subbmp_volume_bg6 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*5);
-   subbmp_volume_bg7 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*6);
-   subbmp_volume_bg8 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*7);
-   subbmp_volume_bg9 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*8);
-   subbmp_volume_bg10 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*9);
-   subbmp_volume_bg11 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*10);
-   subbmp_volume_bg12 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*11);
-   subbmp_volume_bg13 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*12);
-   subbmp_volume_bg14 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*13);
-   subbmp_volume_bg15 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*14);
-   subbmp_volume_bg16 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*15);
-   subbmp_volume_bg17 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*16);
-   subbmp_volume_bg18 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*17);
-   subbmp_volume_bg19 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*18);
-   subbmp_volume_bg20 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*19);
-   subbmp_volume_bg21 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*20);
-   subbmp_volume_bg22 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*21);
-   subbmp_volume_bg23 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*22);
-   subbmp_volume_bg24 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*23);
-   subbmp_volume_bg25 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*24);
-   subbmp_volume_bg26 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*25);
-   subbmp_volume_bg27 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*26);
-   subbmp_volume_bg28 : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*27);
-   subbmp_volume_bar_up : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 15, 422);
-   subbmp_volume_bar_down : constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 422);
-   subbmp_balance_bg1 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*0);
-   subbmp_balance_bg2 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*1);
-   subbmp_balance_bg3 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*2);
-   subbmp_balance_bg4 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*3);
-   subbmp_balance_bg5 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*4);
-   subbmp_balance_bg6 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*5);
-   subbmp_balance_bg7 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*6);
-   subbmp_balance_bg8 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*7);
-   subbmp_balance_bg9 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*8);
-   subbmp_balance_bg10 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*9);
-   subbmp_balance_bg11 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*10);
-   subbmp_balance_bg12 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*11);
-   subbmp_balance_bg13 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*12);
-   subbmp_balance_bg14 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*13);
-   subbmp_balance_bg15 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*14);
-   subbmp_balance_bg16 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*15);
-   subbmp_balance_bg17 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*16);
-   subbmp_balance_bg18 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*17);
-   subbmp_balance_bg19 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*18);
-   subbmp_balance_bg20 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*19);
-   subbmp_balance_bg21 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*20);
-   subbmp_balance_bg22 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*21);
-   subbmp_balance_bg23 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*22);
-   subbmp_balance_bg24 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*23);
-   subbmp_balance_bg25 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*24);
-   subbmp_balance_bg26 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*25);
-   subbmp_balance_bg27 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*26);
-   subbmp_balance_bg28 : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*27);
-   subbmp_balance_bar_up : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 15, 422);
-   subbmp_balance_bar_down : constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 0, 422);
-   subbmp_eq_off_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 61);
-   subbmp_eq_off_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 46, 61);
-   subbmp_eq_on_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 73);
-   subbmp_eq_on_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 46, 73);
-   subbmp_pl_off_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 23, 61);
-   subbmp_pl_off_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 70, 61);
-   subbmp_pl_on_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 23, 73);
-   subbmp_pl_on_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 70, 73);
-   subbmp_shuffle_off_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 0);
-   subbmp_shuffle_off_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 15);
-   subbmp_shuffle_on_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 15*2);
-   subbmp_shuffle_on_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 15*3);
-   subbmp_repeat_off_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 0);
-   subbmp_repeat_off_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 15);
-   subbmp_repeat_on_up : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 15*2);
-   subbmp_repeat_on_down : constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 15*3);
-   subbmp_clutterbar_off : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 0);
-   subbmp_clutterbar_disabled : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 312, 0);
-   subbmp_clutterbar_off_o : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 44);
-   subbmp_clutterbar_off_a : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 312, 44);
-   subbmp_clutterbar_off_i : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 320, 44);
-   subbmp_clutterbar_off_d : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 328, 44);
-   subbmp_clutterbar_off_v : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 336, 44);
-   subbmp_clutterbar_o : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 45);
-   subbmp_clutterbar_a : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 312, 53);
-   subbmp_clutterbar_i : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 320, 61);
-   subbmp_clutterbar_d : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 328, 69);
-   subbmp_clutterbar_v : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 336, 77);
-   subbmp_status_play : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
-   subbmp_status_pause : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 9, 0);
-   subbmp_status_stop : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 18, 0);
-   subbmp_status_red_on : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
-   subbmp_status_red_off : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
-   subbmp_status_green_on : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
-   subbmp_status_green_off : constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
-   subbmp_options_up : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 0);
-   subbmp_options_down : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 9);
-   subbmp_minimize_up : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 0);
-   subbmp_minimize_down : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 9);
-   subbmp_close_up : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 18, 0);
-   subbmp_close_down : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 18, 9);
-   subbmp_maximize_normal_up : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 18);
-   subbmp_maximize_normal_down : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 18);
-   subbmp_maximize_ws_up : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 27);
-   subbmp_maximize_ws_down : constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 27);
-   subbmp_posbar_background : constant Subbitmap := (Bitmap'Pos(BMP_POSBAR), 0, 0);
-   subbmp_posbar_bar_up : constant Subbitmap := (Bitmap'Pos(BMP_POSBAR), 248, 0);
-   subbmp_posbar_bar_down : constant Subbitmap := (Bitmap'Pos(BMP_POSBAR), 277, 0);
+   subbmp_main : aliased constant Subbitmap := (Bitmap'Pos(BMP_MAIN), 0, 0);
+   subbmp_title_bar_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 0);
+   subbmp_title_bar_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 15);
+   subbmp_title_bar_shade_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 29);
+   subbmp_title_bar_shade_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 42);
+   subbmp_title_bar_easter_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 57);
+   subbmp_title_bar_easter_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 27, 72);
+   subbmp_a : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 0);
+   subbmp_mono_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 29, 0);
+   subbmp_mono_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 29, 12);
+   subbmp_stereo_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 0, 0);
+   subbmp_stereo_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_MONOSTER), 0, 12);
+   subbmp_previous_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 0, 0);
+   subbmp_previous_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 0, 18);
+   subbmp_play_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*0, 0);
+   subbmp_play_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*0, 18);
+   subbmp_pause_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*1, 0);
+   subbmp_pause_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*1, 18);
+   subbmp_stop_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*2, 0);
+   subbmp_stop_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*2, 18);
+   subbmp_next_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*3, 0);
+   subbmp_next_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*3, 18);
+   subbmp_eject_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*4, 0);
+   subbmp_eject_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_CBUTTONS), 22+23*4, 16);
+   subbmp_status : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 9*2, 0);
+   subbmp_volume_bg1 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*0);
+   subbmp_volume_bg2 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*1);
+   subbmp_volume_bg3 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*2);
+   subbmp_volume_bg4 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*3);
+   subbmp_volume_bg5 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*4);
+   subbmp_volume_bg6 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*5);
+   subbmp_volume_bg7 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*6);
+   subbmp_volume_bg8 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*7);
+   subbmp_volume_bg9 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*8);
+   subbmp_volume_bg10 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*9);
+   subbmp_volume_bg11 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*10);
+   subbmp_volume_bg12 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*11);
+   subbmp_volume_bg13 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*12);
+   subbmp_volume_bg14 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*13);
+   subbmp_volume_bg15 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*14);
+   subbmp_volume_bg16 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*15);
+   subbmp_volume_bg17 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*16);
+   subbmp_volume_bg18 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*17);
+   subbmp_volume_bg19 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*18);
+   subbmp_volume_bg20 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*19);
+   subbmp_volume_bg21 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*20);
+   subbmp_volume_bg22 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*21);
+   subbmp_volume_bg23 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*22);
+   subbmp_volume_bg24 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*23);
+   subbmp_volume_bg25 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*24);
+   subbmp_volume_bg26 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*25);
+   subbmp_volume_bg27 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*26);
+   subbmp_volume_bg28 : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 15*27);
+   subbmp_volume_bar_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 15, 422);
+   subbmp_volume_bar_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_VOLUME), 0, 422);
+   subbmp_balance_bg1 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*0);
+   subbmp_balance_bg2 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*1);
+   subbmp_balance_bg3 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*2);
+   subbmp_balance_bg4 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*3);
+   subbmp_balance_bg5 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*4);
+   subbmp_balance_bg6 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*5);
+   subbmp_balance_bg7 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*6);
+   subbmp_balance_bg8 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*7);
+   subbmp_balance_bg9 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*8);
+   subbmp_balance_bg10 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*9);
+   subbmp_balance_bg11 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*10);
+   subbmp_balance_bg12 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*11);
+   subbmp_balance_bg13 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*12);
+   subbmp_balance_bg14 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*13);
+   subbmp_balance_bg15 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*14);
+   subbmp_balance_bg16 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*15);
+   subbmp_balance_bg17 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*16);
+   subbmp_balance_bg18 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*17);
+   subbmp_balance_bg19 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*18);
+   subbmp_balance_bg20 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*19);
+   subbmp_balance_bg21 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*20);
+   subbmp_balance_bg22 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*21);
+   subbmp_balance_bg23 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*22);
+   subbmp_balance_bg24 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*23);
+   subbmp_balance_bg25 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*24);
+   subbmp_balance_bg26 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*25);
+   subbmp_balance_bg27 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*26);
+   subbmp_balance_bg28 : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 9, 15*27);
+   subbmp_balance_bar_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 15, 422);
+   subbmp_balance_bar_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_BALANCE), 0, 422);
+   subbmp_eq_off_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 61);
+   subbmp_eq_off_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 46, 61);
+   subbmp_eq_on_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 73);
+   subbmp_eq_on_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 46, 73);
+   subbmp_pl_off_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 23, 61);
+   subbmp_pl_off_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 70, 61);
+   subbmp_pl_on_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 23, 73);
+   subbmp_pl_on_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 70, 73);
+   subbmp_shuffle_off_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 0);
+   subbmp_shuffle_off_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 15);
+   subbmp_shuffle_on_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 15*2);
+   subbmp_shuffle_on_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 29, 15*3);
+   subbmp_repeat_off_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 0);
+   subbmp_repeat_off_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 15);
+   subbmp_repeat_on_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 15*2);
+   subbmp_repeat_on_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_SHUFREP), 0, 15*3);
+   subbmp_clutterbar_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 0);
+   subbmp_clutterbar_disabled : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 312, 0);
+   subbmp_clutterbar_off_o : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 44);
+   subbmp_clutterbar_off_a : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 312, 44);
+   subbmp_clutterbar_off_i : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 320, 44);
+   subbmp_clutterbar_off_d : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 328, 44);
+   subbmp_clutterbar_off_v : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 336, 44);
+   subbmp_clutterbar_o : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 304, 45);
+   subbmp_clutterbar_a : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 312, 53);
+   subbmp_clutterbar_i : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 320, 61);
+   subbmp_clutterbar_d : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 328, 69);
+   subbmp_clutterbar_v : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 336, 77);
+   subbmp_status_play : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
+   subbmp_status_pause : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 9, 0);
+   subbmp_status_stop : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 18, 0);
+   subbmp_status_red_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
+   subbmp_status_red_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
+   subbmp_status_green_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
+   subbmp_status_green_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLAYPAUS), 0, 0);
+   subbmp_options_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 0);
+   subbmp_options_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 9);
+   subbmp_minimize_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 0);
+   subbmp_minimize_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 9);
+   subbmp_close_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 18, 0);
+   subbmp_close_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 18, 9);
+   subbmp_maximize_normal_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 18);
+   subbmp_maximize_normal_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 18);
+   subbmp_maximize_ws_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 0, 27);
+   subbmp_maximize_ws_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_TITLEBAR), 9, 27);
+   subbmp_posbar_background : aliased constant Subbitmap := (Bitmap'Pos(BMP_POSBAR), 0, 0);
+   subbmp_posbar_bar_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_POSBAR), 248, 0);
+   subbmp_posbar_bar_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_POSBAR), 277, 0);
 
-   subbmp_eq_background : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 0);
-   subbmp_eq_title_bar_on : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 134);
-   subbmp_eq_title_bar_off : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 149);
-   subbmp_eq_on_on_up : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 69, 119);
-   subbmp_eq_on_on_down : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 187, 119);
-   subbmp_eq_on_off_up : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 10, 119);
-   subbmp_eq_on_off_down : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 128, 119);
-   subbmp_eq_auto_on_up : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 95, 119);
-   subbmp_eq_auto_on_down : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 213, 119);
-   subbmp_eq_auto_off_up : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 36, 119);
-   subbmp_eq_auto_off_down : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 154, 119);
-   subbmp_eq_presets_up : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 224, 164);
-   subbmp_eq_presets_down : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 224, 176);
-   subbmp_eq_preamp : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13, 164);
-   subbmp_eq_slider_bg1 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*0, 164);
-   subbmp_eq_slider_bg2 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*1, 164);
-   subbmp_eq_slider_bg3 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*2, 164);
-   subbmp_eq_slider_bg4 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*3, 164);
-   subbmp_eq_slider_bg5 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*4, 164);
-   subbmp_eq_slider_bg6 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*5, 164);
-   subbmp_eq_slider_bg7 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*6, 164);
-   subbmp_eq_slider_bg8 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*7, 164);
-   subbmp_eq_slider_bg9 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*8, 164);
-   subbmp_eq_slider_bg10 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*9, 164);
-   subbmp_eq_slider_bg11 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*10, 164);
-   subbmp_eq_slider_bg12 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*11, 164);
-   subbmp_eq_slider_bg13 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*12, 164);
-   subbmp_eq_slider_bg14 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*13, 164);
-   subbmp_eq_slider_bg15 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*0, 229);
-   subbmp_eq_slider_bg16 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*1, 229);
-   subbmp_eq_slider_bg17 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*2, 229);
-   subbmp_eq_slider_bg18 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*3, 229);
-   subbmp_eq_slider_bg19 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*4, 229);
-   subbmp_eq_slider_bg20 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*5, 229);
-   subbmp_eq_slider_bg21 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*6, 229);
-   subbmp_eq_slider_bg22 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*7, 229);
-   subbmp_eq_slider_bg23 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*8, 229);
-   subbmp_eq_slider_bg24 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*9, 229);
-   subbmp_eq_slider_bg25 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*10, 229);
-   subbmp_eq_slider_bg26 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*11, 229);
-   subbmp_eq_slider_bg27 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*12, 229);
-   subbmp_eq_slider_bg28 : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*13, 229);
-   subbmp_eq_slider_up : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 164);
-   subbmp_eq_slider_down : constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 176);
+   subbmp_eq_background : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 0);
+   subbmp_eq_title_bar_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 134);
+   subbmp_eq_title_bar_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 149);
+   subbmp_eq_on_on_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 69, 119);
+   subbmp_eq_on_on_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 187, 119);
+   subbmp_eq_on_off_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 10, 119);
+   subbmp_eq_on_off_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 128, 119);
+   subbmp_eq_auto_on_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 95, 119);
+   subbmp_eq_auto_on_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 213, 119);
+   subbmp_eq_auto_off_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 36, 119);
+   subbmp_eq_auto_off_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 154, 119);
+   subbmp_eq_presets_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 224, 164);
+   subbmp_eq_presets_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 224, 176);
+   subbmp_eq_preamp : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13, 164);
+   subbmp_eq_slider_bg1 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*0, 164);
+   subbmp_eq_slider_bg2 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*1, 164);
+   subbmp_eq_slider_bg3 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*2, 164);
+   subbmp_eq_slider_bg4 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*3, 164);
+   subbmp_eq_slider_bg5 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*4, 164);
+   subbmp_eq_slider_bg6 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*5, 164);
+   subbmp_eq_slider_bg7 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*6, 164);
+   subbmp_eq_slider_bg8 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*7, 164);
+   subbmp_eq_slider_bg9 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*8, 164);
+   subbmp_eq_slider_bg10 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*9, 164);
+   subbmp_eq_slider_bg11 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*10, 164);
+   subbmp_eq_slider_bg12 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*11, 164);
+   subbmp_eq_slider_bg13 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*12, 164);
+   subbmp_eq_slider_bg14 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*13, 164);
+   subbmp_eq_slider_bg15 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*0, 229);
+   subbmp_eq_slider_bg16 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*1, 229);
+   subbmp_eq_slider_bg17 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*2, 229);
+   subbmp_eq_slider_bg18 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*3, 229);
+   subbmp_eq_slider_bg19 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*4, 229);
+   subbmp_eq_slider_bg20 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*5, 229);
+   subbmp_eq_slider_bg21 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*6, 229);
+   subbmp_eq_slider_bg22 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*7, 229);
+   subbmp_eq_slider_bg23 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*8, 229);
+   subbmp_eq_slider_bg24 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*9, 229);
+   subbmp_eq_slider_bg25 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*10, 229);
+   subbmp_eq_slider_bg26 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*11, 229);
+   subbmp_eq_slider_bg27 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*12, 229);
+   subbmp_eq_slider_bg28 : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 13+15*13, 229);
+   subbmp_eq_slider_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 164);
+   subbmp_eq_slider_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_EQMAIN), 0, 176);
 
-   subbmp_pl_top_left_on : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 0);
-   subbmp_pl_title_on : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 26, 0);
-   subbmp_pl_top_on : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 0);
-   subbmp_pl_top_right_on : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 153, 0);
-   subbmp_pl_top_left_off : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 21);
-   subbmp_pl_title_off : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 26, 21);
-   subbmp_pl_top_off : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 21);
-   subbmp_pl_top_right_off : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 153, 21);
-   subbmp_pl_left : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 42);
-   subbmp_pl_right : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 26, 42);
-   subbmp_pl_bottom : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 179, 0);
-   subbmp_pl_bottom_left : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 72);
-   subbmp_pl_bottom_right : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 126, 72);
-   subbmp_pl_menu_add_url_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 111);
-   subbmp_pl_menu_add_dir_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 130);
-   subbmp_pl_menu_add_file_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 149);
-   subbmp_pl_menu_add_url_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 23, 111);
-   subbmp_pl_menu_add_dir_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 23, 130);
-   subbmp_pl_menu_add_file_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 23, 149);
-   subbmp_pl_menu_add_bar : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 48, 111);
-   subbmp_pl_menu_rem_all_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 111);
-   subbmp_pl_menu_rem_crop_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 130);
-   subbmp_pl_menu_rem_sel_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 149);
-   subbmp_pl_menu_rem_misc_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 168);
-   subbmp_pl_menu_rem_all_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 111);
-   subbmp_pl_menu_rem_crop_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 130);
-   subbmp_pl_menu_rem_sel_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 149);
-   subbmp_pl_menu_rem_misc_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 168);
-   subbmp_pl_menu_rem_bar : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 100, 111);
-   subbmp_pl_menu_sel_inv_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 104, 111);
-   subbmp_pl_menu_sel_zero_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 104, 130);
-   subbmp_pl_menu_sel_all_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 104, 149);
-   subbmp_pl_menu_sel_inv_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 111);
-   subbmp_pl_menu_sel_zero_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 130);
-   subbmp_pl_menu_sel_all_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 149);
-   subbmp_pl_menu_sel_bar : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 150, 111);
-   subbmp_pl_menu_misc_sort_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 154, 111);
-   subbmp_pl_menu_misc_inf_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 154, 130);
-   subbmp_pl_menu_misc_opts_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 154, 149);
-   subbmp_pl_menu_misc_sort_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 177, 111);
-   subbmp_pl_menu_misc_inf_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 177, 130);
-   subbmp_pl_menu_misc_opts_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 177, 149);
-   subbmp_pl_menu_misc_bar : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 200, 111);
-   subbmp_pl_menu_list_new_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 204, 111);
-   subbmp_pl_menu_list_save_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 204, 130);
-   subbmp_pl_menu_list_load_up : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 204, 149);
-   subbmp_pl_menu_list_new_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 227, 111);
-   subbmp_pl_menu_list_save_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 227, 130);
-   subbmp_pl_menu_list_load_down : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 227, 149);
-   subbmp_pl_menu_list_bar : constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 250, 111);
+   subbmp_pl_top_left_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 0);
+   subbmp_pl_title_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 26, 0);
+   subbmp_pl_top_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 0);
+   subbmp_pl_top_right_on : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 153, 0);
+   subbmp_pl_top_left_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 21);
+   subbmp_pl_title_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 26, 21);
+   subbmp_pl_top_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 21);
+   subbmp_pl_top_right_off : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 153, 21);
+   subbmp_pl_left : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 42);
+   subbmp_pl_right : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 26, 42);
+   subbmp_pl_bottom : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 179, 0);
+   subbmp_pl_bottom_left : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 72);
+   subbmp_pl_bottom_right : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 126, 72);
+   subbmp_pl_menu_add_url_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 111);
+   subbmp_pl_menu_add_dir_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 130);
+   subbmp_pl_menu_add_file_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 0, 149);
+   subbmp_pl_menu_add_url_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 23, 111);
+   subbmp_pl_menu_add_dir_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 23, 130);
+   subbmp_pl_menu_add_file_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 23, 149);
+   subbmp_pl_menu_add_bar : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 48, 111);
+   subbmp_pl_menu_rem_all_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 111);
+   subbmp_pl_menu_rem_crop_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 130);
+   subbmp_pl_menu_rem_sel_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 149);
+   subbmp_pl_menu_rem_misc_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 54, 168);
+   subbmp_pl_menu_rem_all_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 111);
+   subbmp_pl_menu_rem_crop_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 130);
+   subbmp_pl_menu_rem_sel_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 149);
+   subbmp_pl_menu_rem_misc_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 77, 168);
+   subbmp_pl_menu_rem_bar : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 100, 111);
+   subbmp_pl_menu_sel_inv_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 104, 111);
+   subbmp_pl_menu_sel_zero_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 104, 130);
+   subbmp_pl_menu_sel_all_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 104, 149);
+   subbmp_pl_menu_sel_inv_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 111);
+   subbmp_pl_menu_sel_zero_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 130);
+   subbmp_pl_menu_sel_all_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 127, 149);
+   subbmp_pl_menu_sel_bar : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 150, 111);
+   subbmp_pl_menu_misc_sort_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 154, 111);
+   subbmp_pl_menu_misc_inf_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 154, 130);
+   subbmp_pl_menu_misc_opts_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 154, 149);
+   subbmp_pl_menu_misc_sort_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 177, 111);
+   subbmp_pl_menu_misc_inf_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 177, 130);
+   subbmp_pl_menu_misc_opts_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 177, 149);
+   subbmp_pl_menu_misc_bar : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 200, 111);
+   subbmp_pl_menu_list_new_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 204, 111);
+   subbmp_pl_menu_list_save_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 204, 130);
+   subbmp_pl_menu_list_load_up : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 204, 149);
+   subbmp_pl_menu_list_new_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 227, 111);
+   subbmp_pl_menu_list_save_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 227, 130);
+   subbmp_pl_menu_list_load_down : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 227, 149);
+   subbmp_pl_menu_list_bar : aliased constant Subbitmap := (Bitmap'Pos(BMP_PLEDIT), 250, 111);
 
    -- TODO: bitmap font.
 
@@ -526,15 +599,15 @@ package body Overkill.Classic is
    begin
       main_shade := not main_shade;
       if main_shade then
-         gui.gui.resize_window(w1, 275,14);
+         gui.gui.resize_window (w1, 275, 14);
       else
-         gui.gui.resize_window(w1, 275, 116);
+         gui.gui.resize_window (w1, 275, 116);
       end if;
    end Cmd_Main_Maximize;
 
    procedure Cmd_Main_Close is
    begin
-      gui.gui.destroy_window(w1);
+      gui.gui.destroy_window (w1);
    end Cmd_Main_Close;
 
    procedure Cmd_Main_Previous is
@@ -641,7 +714,7 @@ package body Overkill.Classic is
    end Release_Mouse;
 
    procedure Draw_Pixmap
-     (subbmp : access Subbitmap;
+     (subbmp : access constant Subbitmap;
       dst_x, dst_y : Integer;
       w, h : Integer)
    is
@@ -671,7 +744,7 @@ package body Overkill.Classic is
    end Draw_Pixmap_Double;
 
    procedure Draw_Pixmap_Loop_Horizontal
-     (subbmp : access Subbitmap;
+     (subbmp : access constant Subbitmap;
       dst_x, dst_y : Integer;
       src_w, src_h : Integer;
       dst_w : Integer)
@@ -685,7 +758,7 @@ package body Overkill.Classic is
    end Draw_Pixmap_Loop_Horizontal;
 
    procedure Draw_Pixmap_Loop_Vertical
-     (subbmp : access Subbitmap;
+     (subbmp : access constant Subbitmap;
       dst_x, dst_y : Integer;
       src_w, src_h : Integer;
       dst_h : Integer)
@@ -697,6 +770,14 @@ package body Overkill.Classic is
          I := I + src_h;
       end loop;
    end Draw_Pixmap_Loop_Vertical;
+
+   procedure Draw_Text
+     (x, y, w, h : Integer;
+      Text : String)
+   is
+   begin
+      gui.gui.Draw_Text (x, y, w, h, Text);
+   end Draw_Text;
 
    procedure Background_Mouse_Down
      (wid : access Widget;
@@ -744,7 +825,7 @@ package body Overkill.Classic is
    procedure Background_Draw(wid : access Widget; win : Window_Type) is
       r : access constant Rect;
    begin
-      r := new Rect'(wid.r);
+      r := wid.r'Access;
       Draw_Pixmap_Double(wid.subbmp, r(1), r(2), r(3), r(4));
    end Background_Draw;
 
@@ -785,7 +866,7 @@ package body Overkill.Classic is
    procedure Button_Draw(wid : access Widget; win : Window_Type)
    is
       r : Rect := wid.r;
-      subbmp : access Subbitmap;
+      subbmp : access constant Subbitmap;
    begin
       if capture = wid then
          subbmp := wid.button_down;
@@ -822,11 +903,10 @@ package body Overkill.Classic is
       end if;
    end Checkbox_Mouse_Up;
 
-   procedure Checkbox_Mouse_Move(
-                                 wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                ) is
+   procedure Checkbox_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Checkbox_Mouse_Move;
@@ -834,7 +914,7 @@ package body Overkill.Classic is
    procedure Checkbox_Draw(wid : access Widget; win : Window_Type)
    is
       r : Rect;
-      subbmp : access Subbitmap;
+      subbmp : access constant Subbitmap;
    begin
       r := wid.r;
       if wid.checkbox_checked then
@@ -910,7 +990,7 @@ package body Overkill.Classic is
 
    procedure Slider_Draw(wid : access Widget; win : Window_Type) is
       r : Rect;
-      bg, bar : access Subbitmap;
+      bg, bar : access constant Subbitmap;
       n, slider_range : Natural;
    begin
       Put_Line ("Slider_Draw: wid.slider_value: " & wid.slider_value'Image);
@@ -950,29 +1030,29 @@ package body Overkill.Classic is
       end if;
    end Slider_Draw;
 
-   procedure Clutterbar_Mouse_Down(
-                                   wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                  ) is
+   procedure Clutterbar_Mouse_Down
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
    begin
       null;
    end Clutterbar_Mouse_Down;
 
-   procedure Clutterbar_Mouse_Up(
-                                 wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                ) is
+   procedure Clutterbar_Mouse_Up
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
    begin
       null;
    end Clutterbar_Mouse_Up;
 
-   procedure Clutterbar_Mouse_Move(
-                                   wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                  ) is
+   procedure Clutterbar_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
    begin
       null;
    end Clutterbar_Mouse_Move;
@@ -982,29 +1062,26 @@ package body Overkill.Classic is
       null;
    end Clutterbar_Draw;
 
-   procedure Song_Title_Mouse_Down(
-                                  wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                  ) is
+   procedure Song_Title_Mouse_Down
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Song_Title_Mouse_Down;
 
-   procedure Song_Title_Mouse_Up(
-                                wid : access Widget;
-                                   win : Window_Type;
-                                 X, Y : Integer
-                                ) is
+   procedure Song_Title_Mouse_Up
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Song_Title_Mouse_Up;
 
-   procedure Song_Title_Mouse_Move(
-                                  wid : access Widget;
-                                   win : Window_Type;
-                                   X, Y : Integer
-                                  ) is
+   procedure Song_Title_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Song_Title_Mouse_Move;
@@ -1014,29 +1091,26 @@ package body Overkill.Classic is
       null;
    end Song_Title_Draw;
 
-   procedure Scroll_Mouse_Down(
-                              wid : access Widget;
-                                   win : Window_Type;
-                               X, Y : Integer
-                              ) is
+   procedure Scroll_Mouse_Down
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Scroll_Mouse_Down;
 
-   procedure Scroll_Mouse_Up(
-                            wid : access Widget;
-                                   win : Window_Type;
-                             X, Y : Integer
-                            ) is
+   procedure Scroll_Mouse_Up
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Scroll_Mouse_Up;
 
-   procedure Scroll_Mouse_Move(
-                              wid : access Widget;
-                                   win : Window_Type;
-                               X, Y : Integer
-                              ) is
+   procedure Scroll_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer) is
    begin
       null;
    end Scroll_Mouse_Move;
@@ -1046,292 +1120,407 @@ package body Overkill.Classic is
       null;
    end Scroll_Draw;
 
-   background_handlers : constant Handler := (
-                                              mouse_down => Background_Mouse_Down'Access,
-                                              mouse_up => Background_Mouse_Up'Access,
-                                              mouse_move => Background_Mouse_Move'Access,
-                                              draw => Background_Draw'Access
-                                             );
+   procedure Menu_Mouse_Down
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
+   begin
+      null; -- TODO:
+   end Menu_Mouse_Down;
 
-   button_handlers : constant Handler := (
-                                          mouse_down => Button_Mouse_Down'Access,
-                                          mouse_up => Button_Mouse_Up'Access,
-                                          mouse_move => Button_Mouse_Move'Access,
-                                          draw => Button_Draw'Access
-                                         );
+   procedure Menu_Mouse_Up
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
+   begin
+      null; -- TODO:
+   end Menu_Mouse_Up;
 
-   checkbox_handlers : constant Handler := (
-                                            mouse_down => Checkbox_Mouse_Down'Access,
-                                            mouse_up => Checkbox_Mouse_Up'Access,
-                                            mouse_move => Checkbox_Mouse_Move'Access,
-                                            draw => Checkbox_Draw'Access
-                                           );
+   procedure Menu_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
+   begin
+      null; -- TODO:
+   end Menu_Mouse_Move;
 
-   slider_handlers : constant Handler := (
-                                          mouse_down => Slider_Mouse_Down'Access,
-                                          mouse_up => Slider_Mouse_Up'Access,
-                                          mouse_move => Slider_Mouse_Move'Access,
-                                          draw => Slider_Draw'Access
-                                         );
+   procedure Menu_Draw
+     (wid : access Widget;
+      win : Window_Type)
+   is
+   begin
+      null;
+   end Menu_Draw;
 
-   clutterbar_handlers : constant Handler := (
-                                              mouse_down => Clutterbar_Mouse_Down'Access,
-                                              mouse_up => Clutterbar_Mouse_Up'Access,
-                                              mouse_move => Clutterbar_Mouse_Move'Access,
-                                              draw => Clutterbar_Draw'Access
-                                             );
+   procedure Resizeable_Background_Mouse_Down
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
+   begin
+      if Y < 16 or easymove then
+         Capture_Mouse(Win, Wid);
+         Last_X := X;
+         Last_Y := Y;
+      end if;
+   end Resizeable_Background_Mouse_Down;
 
-   song_title_handlers : constant Handler := (
-                                              mouse_down => Song_Title_Mouse_Down'Access,
-                                              mouse_up => Song_Title_Mouse_Up'Access,
-                                              mouse_move => Song_Title_Mouse_Move'Access,
-                                              draw => Song_Title_Draw'Access
-                                             );
+   procedure Resizeable_Background_Mouse_Up
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
+   begin
+      if Y < 16 or easymove then
+         Release_Mouse;
+      end if;
+   end Resizeable_Background_Mouse_Up;
 
-   scroll_handlers : constant Handler := (
-                                          mouse_down => Scroll_Mouse_Down'Access,
-                                          mouse_up => Scroll_Mouse_Up'Access,
-                                          mouse_move => Scroll_Mouse_Move'Access,
-                                          draw => Scroll_Draw'Access
-                                         );
+   procedure Resizeable_Background_Mouse_Move
+     (wid : access Widget;
+      win : Window_Type;
+      X, Y : Integer)
+   is
+   begin
+      if Capture = Wid then
+         gui.gui.move_window (Win, X - Last_X, Y - Last_Y);
+      end if;
+   end Resizeable_Background_Mouse_Move;
 
-   volume_backgrounds : constant Subbitmap_Array :=
-     (new Subbitmap'(subbmp_volume_bg1),
-      new Subbitmap'(subbmp_volume_bg2),
-      new Subbitmap'(subbmp_volume_bg3),
-      new Subbitmap'(subbmp_volume_bg4),
-      new Subbitmap'(subbmp_volume_bg5),
-      new Subbitmap'(subbmp_volume_bg6),
-      new Subbitmap'(subbmp_volume_bg7),
-      new Subbitmap'(subbmp_volume_bg8),
-      new Subbitmap'(subbmp_volume_bg9),
-      new Subbitmap'(subbmp_volume_bg10),
-      new Subbitmap'(subbmp_volume_bg11),
-      new Subbitmap'(subbmp_volume_bg12),
-      new Subbitmap'(subbmp_volume_bg13),
-      new Subbitmap'(subbmp_volume_bg14),
-      new Subbitmap'(subbmp_volume_bg15),
-      new Subbitmap'(subbmp_volume_bg16),
-      new Subbitmap'(subbmp_volume_bg17),
-      new Subbitmap'(subbmp_volume_bg18),
-      new Subbitmap'(subbmp_volume_bg19),
-      new Subbitmap'(subbmp_volume_bg20),
-      new Subbitmap'(subbmp_volume_bg21),
-      new Subbitmap'(subbmp_volume_bg22),
-      new Subbitmap'(subbmp_volume_bg23),
-      new Subbitmap'(subbmp_volume_bg24),
-      new Subbitmap'(subbmp_volume_bg25),
-      new Subbitmap'(subbmp_volume_bg26),
-      new Subbitmap'(subbmp_volume_bg27),
-      new Subbitmap'(subbmp_volume_bg28)
+   procedure Resizeable_Background_Draw
+     (wid : access Widget;
+      win : Window_Type)
+   is
+   begin
+      Draw_Pixmap (Wid.RB_top_left, 0, 0, 25, 20);
+      draw_pixmap(Wid.RB_top_right, Wid.r(3) - 25, 0, 25, 20);
+      draw_pixmap_loop_horizontal(Wid.RB_top, 25, 0, 25, 20, Wid.r(3)-50);
+      draw_pixmap_loop_horizontal(Wid.RB_bottom, 0, Wid.r(4) - Wid.RB_length_bottom, 25, Wid.RB_length_bottom, Wid.r(3));
+      draw_pixmap_loop_vertical(Wid.RB_left, 0, 20, 25, 29, Wid.r(4)-19*2);
+      draw_pixmap_loop_vertical(Wid.RB_right, Wid.r(3)-25, 20, 25, 29, Wid.r(4)-19*2);
+      draw_pixmap(Wid.RB_bottom_left, 0, Wid.r(4) - Wid.RB_length_bottom, 125, Wid.RB_length_bottom);
+      draw_pixmap(Wid.RB_bottom_right, Wid.r(3) - 150, Wid.r(4) - Wid.RB_length_bottom, 150, Wid.RB_length_bottom);
+   end Resizeable_Background_Draw;
+
+   procedure Pledit_Draw
+     (wid : access Widget;
+      win : Window_Type)
+   is
+      r : access Rect := wid.r'Access;
+   begin
+      Draw_Text (r (1), r (2), r (3), r (4), "Test");
+   end Pledit_Draw;
+
+   background_handlers : aliased constant Handler :=
+     (mouse_down => Background_Mouse_Down'Access,
+      mouse_up => Background_Mouse_Up'Access,
+      mouse_move => Background_Mouse_Move'Access,
+      draw => Background_Draw'Access);
+
+   button_handlers : aliased constant Handler :=
+     (mouse_down => Button_Mouse_Down'Access,
+      mouse_up => Button_Mouse_Up'Access,
+      mouse_move => Button_Mouse_Move'Access,
+      draw => Button_Draw'Access);
+
+   checkbox_handlers : aliased constant Handler :=
+     (mouse_down => Checkbox_Mouse_Down'Access,
+      mouse_up => Checkbox_Mouse_Up'Access,
+      mouse_move => Checkbox_Mouse_Move'Access,
+      draw => Checkbox_Draw'Access);
+
+   slider_handlers : aliased constant Handler :=
+     (mouse_down => Slider_Mouse_Down'Access,
+      mouse_up => Slider_Mouse_Up'Access,
+      mouse_move => Slider_Mouse_Move'Access,
+      draw => Slider_Draw'Access);
+
+   clutterbar_handlers : aliased constant Handler :=
+     (mouse_down => Clutterbar_Mouse_Down'Access,
+      mouse_up => Clutterbar_Mouse_Up'Access,
+      mouse_move => Clutterbar_Mouse_Move'Access,
+      draw => Clutterbar_Draw'Access);
+
+   song_title_handlers : aliased constant Handler :=
+     (mouse_down => Song_Title_Mouse_Down'Access,
+      mouse_up => Song_Title_Mouse_Up'Access,
+      mouse_move => Song_Title_Mouse_Move'Access,
+      draw => Song_Title_Draw'Access);
+
+   scroll_handlers : aliased constant Handler :=
+     (mouse_down => Scroll_Mouse_Down'Access,
+      mouse_up => Scroll_Mouse_Up'Access,
+      mouse_move => Scroll_Mouse_Move'Access,
+      draw => Scroll_Draw'Access);
+
+   menu_handlers : aliased constant Handler :=
+     (mouse_down => Menu_Mouse_Down'Access,
+      mouse_up => Menu_Mouse_Up'Access,
+      mouse_move => Menu_Mouse_Move'Access,
+      draw => Menu_Draw'Access);
+
+   Resizeable_Background_Handlers : aliased constant Handler :=
+     (mouse_down => Resizeable_Background_Mouse_Down'Access,
+      mouse_up => Resizeable_Background_Mouse_Up'Access,
+      mouse_move => Resizeable_Background_Mouse_Move'Access,
+      draw => Resizeable_Background_Draw'Access);
+
+   Pledit_Handlers : aliased constant Handler :=
+     (mouse_down => null,
+      mouse_up => null,
+      mouse_move => null,
+      draw => Pledit_Draw'Access);
+
+   volume_backgrounds : aliased constant Subbitmap_Array :=
+     (subbmp_volume_bg1'Access,
+      subbmp_volume_bg2'Access,
+      subbmp_volume_bg3'Access,
+      subbmp_volume_bg4'Access,
+      subbmp_volume_bg5'Access,
+      subbmp_volume_bg6'Access,
+      subbmp_volume_bg7'Access,
+      subbmp_volume_bg8'Access,
+      subbmp_volume_bg9'Access,
+      subbmp_volume_bg10'Access,
+      subbmp_volume_bg11'Access,
+      subbmp_volume_bg12'Access,
+      subbmp_volume_bg13'Access,
+      subbmp_volume_bg14'Access,
+      subbmp_volume_bg15'Access,
+      subbmp_volume_bg16'Access,
+      subbmp_volume_bg17'Access,
+      subbmp_volume_bg18'Access,
+      subbmp_volume_bg19'Access,
+      subbmp_volume_bg20'Access,
+      subbmp_volume_bg21'Access,
+      subbmp_volume_bg22'Access,
+      subbmp_volume_bg23'Access,
+      subbmp_volume_bg24'Access,
+      subbmp_volume_bg25'Access,
+      subbmp_volume_bg26'Access,
+      subbmp_volume_bg27'Access,
+      subbmp_volume_bg28'Access
      );
 
-   balance_backgrounds : constant Subbitmap_Array :=
-     (new Subbitmap'(subbmp_balance_bg28),
-      new Subbitmap'(subbmp_balance_bg26),
-      new Subbitmap'(subbmp_balance_bg24),
-      new Subbitmap'(subbmp_balance_bg22),
-      new Subbitmap'(subbmp_balance_bg20),
-      new Subbitmap'(subbmp_balance_bg18),
-      new Subbitmap'(subbmp_balance_bg16),
-      new Subbitmap'(subbmp_balance_bg14),
-      new Subbitmap'(subbmp_balance_bg12),
-      new Subbitmap'(subbmp_balance_bg10),
-      new Subbitmap'(subbmp_balance_bg8),
-      new Subbitmap'(subbmp_balance_bg6),
-      new Subbitmap'(subbmp_balance_bg4),
-      new Subbitmap'(subbmp_balance_bg1),
-      new Subbitmap'(subbmp_balance_bg2),
-      new Subbitmap'(subbmp_balance_bg4),
-      new Subbitmap'(subbmp_balance_bg6),
-      new Subbitmap'(subbmp_balance_bg8),
-      new Subbitmap'(subbmp_balance_bg10),
-      new Subbitmap'(subbmp_balance_bg12),
-      new Subbitmap'(subbmp_balance_bg14),
-      new Subbitmap'(subbmp_balance_bg16),
-      new Subbitmap'(subbmp_balance_bg18),
-      new Subbitmap'(subbmp_balance_bg20),
-      new Subbitmap'(subbmp_balance_bg22),
-      new Subbitmap'(subbmp_balance_bg24),
-      new Subbitmap'(subbmp_balance_bg26),
-      new Subbitmap'(subbmp_balance_bg28)
+   balance_backgrounds : aliased constant Subbitmap_Array :=
+     (subbmp_balance_bg28'Access,
+      subbmp_balance_bg26'Access,
+      subbmp_balance_bg24'Access,
+      subbmp_balance_bg22'Access,
+      subbmp_balance_bg20'Access,
+      subbmp_balance_bg18'Access,
+      subbmp_balance_bg16'Access,
+      subbmp_balance_bg14'Access,
+      subbmp_balance_bg12'Access,
+      subbmp_balance_bg10'Access,
+      subbmp_balance_bg8'Access,
+      subbmp_balance_bg6'Access,
+      subbmp_balance_bg4'Access,
+      subbmp_balance_bg1'Access,
+      subbmp_balance_bg2'Access,
+      subbmp_balance_bg4'Access,
+      subbmp_balance_bg6'Access,
+      subbmp_balance_bg8'Access,
+      subbmp_balance_bg10'Access,
+      subbmp_balance_bg12'Access,
+      subbmp_balance_bg14'Access,
+      subbmp_balance_bg16'Access,
+      subbmp_balance_bg18'Access,
+      subbmp_balance_bg20'Access,
+      subbmp_balance_bg22'Access,
+      subbmp_balance_bg24'Access,
+      subbmp_balance_bg26'Access,
+      subbmp_balance_bg28'Access
      );
+
+   menu_add_up_backgrounds : aliased constant Subbitmap_Array :=
+     (subbmp_pl_menu_add_url_up'Access,
+      subbmp_pl_menu_add_dir_up'Access,
+      subbmp_pl_menu_add_file_up'Access);
+
+   menu_add_down_backgrounds : aliased constant Subbitmap_Array :=
+     (subbmp_pl_menu_add_url_down'Access,
+      subbmp_pl_menu_add_dir_down'Access,
+      subbmp_pl_menu_add_file_down'Access);
 
    main_template : aliased Template :=
      ((Background_Widget,
       (0, 0, 275, 116),
       CURSOR_NORMAL,
-      new Handler'(background_handlers),
-      new Subbitmap'(subbmp_main),
+      background_handlers'Access,
+      subbmp_main'Access,
       False),
       (Background_Widget,
        (0, 0, 275, 14),
        CURSOR_TITLEBAR,
-       new Handler'(background_handlers),
-       new Subbitmap'(subbmp_title_bar_off),
+       background_handlers'Access,
+       subbmp_title_bar_off'Access,
        False),
       (Background_Widget,
        (212, 41, 29, 12),
        CURSOR_NORMAL,
-       new Handler'(background_handlers),
-       new Subbitmap'(subbmp_mono_off),
+       background_handlers'Access,
+       subbmp_mono_off'Access,
        False),
       (Background_Widget,
        (939, 41, 29, 12),
        CURSOR_NORMAL,
-       new Handler'(background_handlers),
-       new Subbitmap'(subbmp_stereo_off),
+       background_handlers'Access,
+       subbmp_stereo_off'Access,
        False),
       (Background_Widget,
        (26, 28, 9, 9),
        CURSOR_NORMAL,
-       new Handler'(background_handlers),
-       new Subbitmap'(subbmp_status_stop),
+       background_handlers'Access,
+       subbmp_status_stop'Access,
        False),
       (Button_Widget,
        (6, 3, 9, 9),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_options_up),
-       new Subbitmap'(subbmp_options_down),
+       button_handlers'Access,
+       subbmp_options_up'Access,
+       subbmp_options_down'Access,
        Test_Button'Access),
       (Button_Widget,
        (244, 3, 9, 9),
        CURSOR_MIN,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_minimize_up),
-       new Subbitmap'(subbmp_minimize_down),
+       button_handlers'Access,
+       subbmp_minimize_up'Access,
+       subbmp_minimize_down'Access,
        Cmd_Main_Minimize'Access),
       (Button_Widget,
        (254, 3, 9, 9),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_maximize_normal_up),
-       new Subbitmap'(subbmp_maximize_normal_down),
+       button_handlers'Access,
+       subbmp_maximize_normal_up'Access,
+       subbmp_maximize_normal_down'Access,
        Cmd_Main_Maximize'Access),
       (Button_Widget,
        (264, 3, 9, 9),
        CURSOR_CLOSE,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_close_up),
-       new Subbitmap'(subbmp_close_down),
+       button_handlers'Access,
+       subbmp_close_up'Access,
+       subbmp_close_down'Access,
        Cmd_Main_Close'Access),
       (Button_Widget,
        (16+23*0, 88, 23, 18),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_previous_up),
-       new Subbitmap'(subbmp_previous_down),
+       button_handlers'Access,
+       subbmp_previous_up'Access,
+       subbmp_previous_down'Access,
        Cmd_Main_Previous'Access),
       (Button_Widget,
        (16+23*1-1, 88, 23, 18),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_play_up),
-       new Subbitmap'(subbmp_play_down),
+       button_handlers'Access,
+       subbmp_play_up'Access,
+       subbmp_play_down'Access,
        Cmd_Main_Play'Access),
       (Button_Widget,
        (16+23*2-1, 88, 23, 18),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_pause_up),
-       new Subbitmap'(subbmp_pause_down),
+       button_handlers'Access,
+       subbmp_pause_up'Access,
+       subbmp_pause_down'Access,
        Cmd_Main_Pause'Access),
       (Button_Widget,
        (16+23*3-1, 88, 23, 18),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_stop_up),
-       new Subbitmap'(subbmp_stop_down),
+       button_handlers'Access,
+       subbmp_stop_up'Access,
+       subbmp_stop_down'Access,
        Cmd_Main_Stop'Access),
       (Button_Widget,
        (16+23*4-1, 88, 23, 18),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_next_up),
-       new Subbitmap'(subbmp_next_down),
+       button_handlers'Access,
+       subbmp_next_up'Access,
+       subbmp_next_down'Access,
        Cmd_Main_Next'Access),
       (Button_Widget,
        (136, 89, 22, 16),
        CURSOR_NORMAL,
-       new Handler'(button_handlers),
-       new Subbitmap'(subbmp_eject_up),
-       new Subbitmap'(subbmp_eject_down),
+       button_handlers'Access,
+       subbmp_eject_up'Access,
+       subbmp_eject_down'Access,
        Cmd_Main_Eject'Access),
       (Background_Widget,
        (26, 28, 26+9, 28+9),
        CURSOR_NORMAL,
-       new Handler'(background_handlers),
+       background_handlers'Access,
        null,
        False),
       (T => Slider_Widget,
        r => (107, 57, 68, 14),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(volume_backgrounds),
-       slider_up => new Subbitmap'(subbmp_volume_bar_up),
-       slider_down => new Subbitmap'(subbmp_volume_bar_down),
+       control => slider_handlers'Access,
+       slider_background => volume_backgrounds'Access,
+       slider_up => subbmp_volume_bar_up'Access,
+       slider_down => subbmp_volume_bar_down'Access,
        slider_horizontal => True,
        slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 40,
        slider_action => null),
       (T => Slider_Widget,
        r => (177, 57, 38, 14),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(balance_backgrounds),
-       slider_up => new Subbitmap'(subbmp_balance_bar_up),
-       slider_down => new Subbitmap'(subbmp_balance_bar_down),
+       control => slider_handlers'Access,
+       slider_background => balance_backgrounds'Access,
+       slider_up => subbmp_balance_bar_up'Access,
+       slider_down => subbmp_balance_bar_down'Access,
        slider_horizontal => True,
        slider_min => 0,
        slider_max => 24,
-       slider_value => 0,
+       slider_value => 12,
        slider_action => null),
       (Checkbox_Widget,
        (219, 58, 23, 12),
        CURSOR_NORMAL,
-       new Handler'(checkbox_handlers),
-       new Subbitmap'(subbmp_eq_on_up),
-       new Subbitmap'(subbmp_eq_on_down),
-       new Subbitmap'(subbmp_eq_off_up),
-       new Subbitmap'(subbmp_eq_off_down),
+       checkbox_handlers'Access,
+       subbmp_eq_on_up'Access,
+       subbmp_eq_on_down'Access,
+       subbmp_eq_off_up'Access,
+       subbmp_eq_off_down'Access,
        False,
        Cmd_Main_Eq'Access),
       (Checkbox_Widget,
        (219+23, 58, 23, 12),
        CURSOR_NORMAL,
-       new Handler'(checkbox_handlers),
-       new Subbitmap'(subbmp_pl_on_up),
-       new Subbitmap'(subbmp_pl_on_down),
-       new Subbitmap'(subbmp_pl_off_up),
-       new Subbitmap'(subbmp_pl_off_down),
+       checkbox_handlers'Access,
+       subbmp_pl_on_up'Access,
+       subbmp_pl_on_down'Access,
+       subbmp_pl_off_up'Access,
+       subbmp_pl_off_down'Access,
        False,
        Cmd_Main_Pl'Access),
       (Checkbox_Widget,
        (165, 89, 46, 15),
        CURSOR_NORMAL,
-       new Handler'(checkbox_handlers),
-       new Subbitmap'(subbmp_shuffle_on_up),
-       new Subbitmap'(subbmp_shuffle_on_down),
-       new Subbitmap'(subbmp_shuffle_off_up),
-       new Subbitmap'(subbmp_shuffle_off_down),
+       checkbox_handlers'Access,
+       subbmp_shuffle_on_up'Access,
+       subbmp_shuffle_on_down'Access,
+       subbmp_shuffle_off_up'Access,
+       subbmp_shuffle_off_down'Access,
        False,
        Test_Checkbox'Access),
       (Checkbox_Widget,
        (210, 89, 29, 15),
        CURSOR_NORMAL,
-       new Handler'(checkbox_handlers),
-       new Subbitmap'(subbmp_repeat_on_up),
-       new Subbitmap'(subbmp_repeat_on_down),
-       new Subbitmap'(subbmp_repeat_off_up),
-       new Subbitmap'(subbmp_repeat_off_down),
+       checkbox_handlers'Access,
+       subbmp_repeat_on_up'Access,
+       subbmp_repeat_on_down'Access,
+       subbmp_repeat_off_up'Access,
+       subbmp_repeat_off_down'Access,
        False,
        Test_Checkbox'Access),
       (T => Clutterbar_Widget,
        r => (10, 22, 8, 43),
        c => CURSOR_NORMAL,
-       control => new Handler'(clutterbar_handlers),
+       control => clutterbar_handlers'Access,
        clutterbar_a_value => False,
        clutterbar_d_value => False,
        clutterbar_mouse_down => 0,
@@ -1343,16 +1532,16 @@ package body Overkill.Classic is
       (Song_Title_Widget,
        (112, 27, 152, 6),
        CURSOR_SONGNAME,
-       new Handler'(song_title_handlers),
+       song_title_handlers'Access,
        new String'(" *** "),
        0),
       (Scroll_Widget,
        (16, 72, 248, 10),
        CURSOR_NORMAL,
-       new Handler'(scroll_handlers),
-       new Subbitmap'(subbmp_posbar_background),
-       new Subbitmap'(subbmp_posbar_bar_up),
-       new Subbitmap'(subbmp_posbar_bar_down),
+       scroll_handlers'Access,
+       subbmp_posbar_background'Access,
+       subbmp_posbar_bar_up'Access,
+       subbmp_posbar_bar_down'Access,
        29,
        0)
      );
@@ -1377,35 +1566,35 @@ package body Overkill.Classic is
       null;
    end cmd_eq_presets;
 
-   eq_slider_backgrounds : Subbitmap_Array :=
-     (new Subbitmap'(subbmp_eq_slider_bg1),
-      new Subbitmap'(subbmp_eq_slider_bg2),
-      new Subbitmap'(subbmp_eq_slider_bg3),
-      new Subbitmap'(subbmp_eq_slider_bg4),
-      new Subbitmap'(subbmp_eq_slider_bg5),
-      new Subbitmap'(subbmp_eq_slider_bg6),
-      new Subbitmap'(subbmp_eq_slider_bg7),
-      new Subbitmap'(subbmp_eq_slider_bg8),
-      new Subbitmap'(subbmp_eq_slider_bg9),
-      new Subbitmap'(subbmp_eq_slider_bg10),
-      new Subbitmap'(subbmp_eq_slider_bg11),
-      new Subbitmap'(subbmp_eq_slider_bg12),
-      new Subbitmap'(subbmp_eq_slider_bg13),
-      new Subbitmap'(subbmp_eq_slider_bg14),
-      new Subbitmap'(subbmp_eq_slider_bg15),
-      new Subbitmap'(subbmp_eq_slider_bg16),
-      new Subbitmap'(subbmp_eq_slider_bg17),
-      new Subbitmap'(subbmp_eq_slider_bg18),
-      new Subbitmap'(subbmp_eq_slider_bg19),
-      new Subbitmap'(subbmp_eq_slider_bg20),
-      new Subbitmap'(subbmp_eq_slider_bg21),
-      new Subbitmap'(subbmp_eq_slider_bg22),
-      new Subbitmap'(subbmp_eq_slider_bg23),
-      new Subbitmap'(subbmp_eq_slider_bg24),
-      new Subbitmap'(subbmp_eq_slider_bg25),
-      new Subbitmap'(subbmp_eq_slider_bg26),
-      new Subbitmap'(subbmp_eq_slider_bg27),
-      new Subbitmap'(subbmp_eq_slider_bg28)
+   eq_slider_backgrounds : aliased constant Subbitmap_Array :=
+     (subbmp_eq_slider_bg1'Access,
+      subbmp_eq_slider_bg2'Access,
+      subbmp_eq_slider_bg3'Access,
+      subbmp_eq_slider_bg4'Access,
+      subbmp_eq_slider_bg5'Access,
+      subbmp_eq_slider_bg6'Access,
+      subbmp_eq_slider_bg7'Access,
+      subbmp_eq_slider_bg8'Access,
+      subbmp_eq_slider_bg9'Access,
+      subbmp_eq_slider_bg10'Access,
+      subbmp_eq_slider_bg11'Access,
+      subbmp_eq_slider_bg12'Access,
+      subbmp_eq_slider_bg13'Access,
+      subbmp_eq_slider_bg14'Access,
+      subbmp_eq_slider_bg15'Access,
+      subbmp_eq_slider_bg16'Access,
+      subbmp_eq_slider_bg17'Access,
+      subbmp_eq_slider_bg18'Access,
+      subbmp_eq_slider_bg19'Access,
+      subbmp_eq_slider_bg20'Access,
+      subbmp_eq_slider_bg21'Access,
+      subbmp_eq_slider_bg22'Access,
+      subbmp_eq_slider_bg23'Access,
+      subbmp_eq_slider_bg24'Access,
+      subbmp_eq_slider_bg25'Access,
+      subbmp_eq_slider_bg26'Access,
+      subbmp_eq_slider_bg27'Access,
+      subbmp_eq_slider_bg28'Access
      );
 
    equalizer_template : aliased Template :=
@@ -1413,193 +1602,304 @@ package body Overkill.Classic is
      ((T => Background_Widget,
        r => (0, 0, 275, 116),
        c => CURSOR_NORMAL,
-       control => new Handler'(background_handlers),
-       subbmp => new Subbitmap' (subbmp_eq_background),
+       control => background_handlers'Access,
+       subbmp => subbmp_eq_background'Access,
        move_window => False),
       -- title bar
       (T => Background_Widget,
        r => (0, 0, 275, 14),
        c => CURSOR_NORMAL,
-       control => new Handler'(background_handlers),
-       subbmp => new Subbitmap'(subbmp_eq_title_bar_off),
+       control => background_handlers'Access,
+       subbmp => subbmp_eq_title_bar_off'Access,
        move_window => False),
       (T => Button_Widget,
        r => (254, 3, 9, 9),
        c => CURSOR_NORMAL,
-       control => new Handler'(button_handlers),
-       button_up => new Subbitmap'(subbmp_maximize_normal_up),
-       button_down => new Subbitmap'(subbmp_maximize_normal_down),
+       control => button_handlers'Access,
+       button_up => subbmp_maximize_normal_up'Access,
+       button_down => subbmp_maximize_normal_down'Access,
        button_action => cmd_eq_maximize'Access),
       (T => Button_Widget,
        r => (264, 3, 9, 9),
        c => CURSOR_CLOSE,
-       control => new Handler'(button_handlers),
-       button_up => new Subbitmap'(subbmp_close_up),
-       button_down => new Subbitmap'(subbmp_close_down),
+       control => button_handlers'Access,
+       button_up => subbmp_close_up'Access,
+       button_down => subbmp_close_down'Access,
        button_action => cmd_eq_close'Access),
       -- on auto buttons
       (T => Checkbox_Widget,
        r => (14, 18, 26, 12),
        c => CURSOR_NORMAL,
-       control => new Handler'(checkbox_handlers),
-       checkbox_on_up => new Subbitmap'(subbmp_eq_on_on_up),
-       checkbox_on_down => new Subbitmap'(subbmp_eq_on_on_down),
-       checkbox_off_up => new Subbitmap'(subbmp_eq_on_off_up),
-       checkbox_off_down => new Subbitmap'(subbmp_eq_on_off_down),
+       control => checkbox_handlers'Access,
+       checkbox_on_up => subbmp_eq_on_on_up'Access,
+       checkbox_on_down => subbmp_eq_on_on_down'Access,
+       checkbox_off_up => subbmp_eq_on_off_up'Access,
+       checkbox_off_down => subbmp_eq_on_off_down'Access,
        checkbox_action => test_checkbox'Access,
        checkbox_checked => False),
       (T => Checkbox_Widget,
        r => (40, 18, 32, 12),
        c => CURSOR_NORMAL,
-       control => new Handler'(checkbox_handlers),
-       checkbox_on_up => new Subbitmap'(subbmp_eq_auto_on_up),
-       checkbox_on_down => new Subbitmap'(subbmp_eq_auto_on_down),
-       checkbox_off_up => new Subbitmap'(subbmp_eq_auto_off_up),
-       checkbox_off_down => new Subbitmap'(subbmp_eq_auto_off_down),
+       control => checkbox_handlers'Access,
+       checkbox_on_up => subbmp_eq_auto_on_up'Access,
+       checkbox_on_down => subbmp_eq_auto_on_down'Access,
+       checkbox_off_up => subbmp_eq_auto_off_up'Access,
+       checkbox_off_down => subbmp_eq_auto_off_down'Access,
        checkbox_action => test_checkbox'Access,
        checkbox_checked => False),
       -- presets button
       (T => Button_Widget,
        r => (217, 18, 44, 12),
        c => CURSOR_NORMAL,
-       control => new Handler'(button_handlers),
-       button_up => new Subbitmap'(subbmp_eq_presets_up),
-       button_down => new Subbitmap'(subbmp_eq_presets_down),
+       control => button_handlers'Access,
+       button_up => subbmp_eq_presets_up'Access,
+       button_down => subbmp_eq_presets_down'Access,
        button_action => cmd_eq_presets'Access),
       -- preamp
       (T => Slider_Widget,
        r => (21, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*0, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*1, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*2, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*3, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*4, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*5, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*6, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*7, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*8, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null),
       (T => Slider_Widget,
        r => (78+18*9, 38, 14, 64),
        c => CURSOR_NORMAL,
-       control => new Handler'(slider_handlers),
-       slider_background => new Subbitmap_Array'(eq_slider_backgrounds),
-       slider_up => new Subbitmap'(subbmp_eq_slider_up),
-       slider_down => new Subbitmap'(subbmp_eq_slider_down),
+       control => slider_handlers'Access,
+       slider_background => eq_slider_backgrounds'Access,
+       slider_up => subbmp_eq_slider_up'Access,
+       slider_down => subbmp_eq_slider_down'Access,
        slider_horizontal => false,
-       slider_min => 2,
+       slider_min => 0,
        slider_max => 51,
-       slider_value => 0,
+       slider_value => 25,
        slider_action => null)
      );
+
+   Playlist_Template : aliased Template :=
+     ((T => Resizeable_Background_Widget,
+       r => (0, 0, 275, 116),
+       c => CURSOR_NORMAL,
+       control => resizeable_background_handlers'Access,
+       RB_top_left => subbmp_pl_top_left_off'Access,
+       RB_title => subbmp_pl_title_off'Access,
+       RB_top => subbmp_pl_top_off'Access,
+       RB_top_right => subbmp_pl_top_right_off'Access,
+       RB_left => subbmp_pl_left'Access,
+       RB_right => subbmp_pl_right'Access,
+       RB_bottom => subbmp_pl_bottom'Access,
+       RB_bottom_left => subbmp_pl_bottom_left'Access,
+       RB_bottom_right => subbmp_pl_bottom_right'Access,
+       RB_length_top => 0,
+       RB_length_left => 0,
+       RB_length_right => 0,
+       RB_length_bottom => 38),
+      (T => Pledit_Widget,
+       r => (12, 20, 243, 58),
+       c => CURSOR_NORMAL,
+       control => pledit_handlers'Access),
+      --   -- menus
+      (T => Menu_Widget,
+       r => (11, 86, 25, 18),
+       c => CURSOR_NORMAL,
+       control => menu_handlers'Access,
+       Menu_Num_Buttons => 3,
+       Menu_Buttons_Up => menu_add_up_backgrounds'Access,
+       Menu_Buttons_Down => menu_add_down_backgrounds'Access,
+       Menu_Bar => subbmp_pl_menu_add_bar'Access),
+      --  (T => Menu_Widget,
+      --   r => (40, 86, 25, 18),
+      --   c => CURSOR_NORMAL,
+      --   control => menu_handlers,
+      --   &data_menu_rem),
+      --  (T => Menu_Widget,
+      --   r => (69, 86, 25, 18),
+      --   c => CURSOR_NORMAL,
+      --   control => menu_handlers,
+      --   &data_menu_sel),
+      --  (T => Menu_Widget,
+      --   r => (98, 86, 25, 18),
+      --   c => CURSOR_NORMAL,
+      --   control => menu_handlers,
+      --   &data_menu_misc),
+      --  (T => Menu_Widget,
+      --   r => (228, 86, 25, 18},
+      --   c => CURSOR_NORMAL,
+      --   control => menu_handlers,
+      --   &data_menu_list),
+      --   -- playback
+      (T => Button_Widget,
+       r => (0, 0, 0, 0),
+       c => CURSOR_NORMAL,
+       control => button_handlers'Access,
+       button_up => null,
+       button_down => null,
+       button_action => Test_Button'Access),
+      (T => Button_Widget,
+       r => (131, 101, 8, 8),
+       c => CURSOR_NORMAL,
+       control => button_handlers'Access,
+       button_up => null,
+       button_down => null,
+       button_action => Test_Button'Access),
+      (T => Button_Widget,
+       r => (0, 0, 0, 0),
+       c => CURSOR_NORMAL,
+       control => button_handlers'Access,
+       button_up => null,
+       button_down => null,
+       button_action => Test_Button'Access),
+      (T => Button_Widget,
+       r => (0, 0, 0, 0),
+       c => CURSOR_NORMAL,
+       control => button_handlers'Access,
+       button_up => null,
+       button_down => null,
+       button_action => Test_Button'Access),
+      (T => Button_Widget,
+       r => (0, 0, 0, 0),
+       c => CURSOR_NORMAL,
+       control => button_handlers'Access,
+       button_up => null,
+       button_down => null,
+       button_action => Test_Button'Access),
+      (T => Button_Widget,
+       r => (0, 0, 0, 0),
+       c => CURSOR_NORMAL,
+       control => button_handlers'Access,
+       button_up => null,
+       button_down => null,
+       button_action => Test_Button'Access)
+      --
+      --    ((256, 97, 19, 19),
+      --     CURSOR_NORMAL,
+      --     grip_handlers,
+      --     &data_pl_grip),
+      --    (T => Button_Widget,
+      --     (254, 3, 9, 9),
+      --     CURSOR_NORMAL,
+      --     button_handlers,
+      --     &data_pl_maximize),
+      --    (T => Button_Widget,
+      --     (264, 3, 9, 9),
+      --     CURSOR_CLOSE,
+      --     button_handlers,
+      --     &data_pl_close)
+       );
 
    -- TODO: missing template functions.
 
@@ -1792,7 +2092,12 @@ package body Overkill.Classic is
       template_draw(w2, equalizer_template);
    end Equalizer_Draw;
 
-   main_callbacks : Skin_Callbacks :=
+   procedure Playlist_Draw is
+   begin
+      Template_Draw(w3, Playlist_Template);
+   end Playlist_Draw;
+
+   main_callbacks : aliased Skin_Callbacks :=
      (mouse_down => Main_Mouse_Down'Access,
       mouse_up => Main_Mouse_Up'Access,
       mouse_move => Main_Mouse_Move'Access,
@@ -1808,6 +2113,14 @@ package body Overkill.Classic is
       focus => null,
       resize => null);
 
+   Playlist_Callbacks : aliased Skin_Callbacks :=
+     (mouse_down => null,
+      mouse_up => null,
+      mouse_move => null,
+      draw => Playlist_Draw'Access,
+      focus => null,
+      resize => null);
+
    procedure New_Classic
      (Skin : in out Classic_Skin_Type;
       GUI : Gui_Dispatch)
@@ -1817,7 +2130,7 @@ package body Overkill.Classic is
    begin
       Put_Line ("Loading classic skin.");
       Skin.GUI := GUI;
-      w1 := Skin.GUI.create_window (0, 0, 275, 116, "Main", new Skin_Callbacks'(main_callbacks));
+      w1 := Skin.GUI.create_window (0, 0, 275, 116, "Main", main_callbacks'Access);
       if w1 = null then
          raise Program_Error with "Failed to create Main Window.";
       end if;
@@ -1826,7 +2139,7 @@ package body Overkill.Classic is
       if w2 = null then
          raise Program_Error with "Failed to create Equalizer Window.";
       end if;
-      w3 := Skin.GUI.create_window (0, 116*2, 275, 116, "Playlist", null);
+      w3 := Skin.GUI.create_window (0, 116*2, 275, 116, "Playlist", Playlist_Callbacks'Access);
       if w3 = null then
          raise Program_Error with "Failed to create Playlist Window.";
       end if;
@@ -1849,7 +2162,7 @@ package body Overkill.Classic is
       Skin.GUI.show_window (w1);
       Skin.GUI.show_window (w1);
       Skin.GUI.show_window (w2);
-      --Skin.GUI.show_window (w3);
+      Skin.GUI.show_window (w3);
    end New_Classic;
 
    procedure Finalize

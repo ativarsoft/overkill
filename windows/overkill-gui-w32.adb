@@ -55,6 +55,9 @@ package body Overkill.Gui.W32 is
    
    SWP_NOSIZE : constant := 16#0001#;
    SWP_NOZORDER : constant := 16#0004#;
+   SWP_NOMOVE : constant := 16#0002#;
+   
+   ANSI_VAR_FONT : constant := 12;
    
    --
    -- Types
@@ -65,7 +68,8 @@ package body Overkill.Gui.W32 is
    type LPCSTR is new System.Address;
    type HMENU is new System.Address;
    type HINSTANCE is new System.Address;
-   type HINSTANCE2 is access all Null_Record;
+   --type HINSTANCE2 is access all Null_Record;
+   type HFONT is access all Null_Record;
    type LPVOID is new System.Address;
    type DWORD is new Interfaces.C.unsigned;
    type BOOL is new Interfaces.C.int;
@@ -84,6 +88,7 @@ package body Overkill.Gui.W32 is
    type HDC is new System.Address;
    type HGDIOBJ is access all Null_Record;
    type LONG_PTR is access Null_Record;
+   type COLORREF is new DWORD;
    
    --
    -- Records
@@ -185,6 +190,7 @@ package body Overkill.Gui.W32 is
    --function HWND_To_Window is new Ada.Unchecked_Conversion(HWND, Window);
    --function Window_To_HWND is new Ada.Unchecked_Conversion(Window, HWND);
    function MAKEINTRESOURCE is new Ada.Unchecked_Conversion(System.Address, LPCSTR);
+   function MAKEINTRESOURCE is new Ada.Unchecked_Conversion(Interfaces.C.int, LPCSTR);
    
    function HANDLE_To_Pixmap is new Ada.Unchecked_Conversion(HANDLE, Pixmap);
    function HANDLE_To_Cursor is new Ada.Unchecked_Conversion(HANDLE, Cursor);
@@ -200,32 +206,32 @@ package body Overkill.Gui.W32 is
       return HICON;
    
    function LoadIconA
-     (instance : HINSTANCE2;
+     (instance : HINSTANCE;
       lpIconName : size_t)
       return HICON;
    
    pragma Import (Stdcall, LoadIconA, "LoadIconA");
    
-   function LoadCursorA(
-                       instance : HINSTANCE;
-                       lpCursorName : LPCSTR
-                      ) return HCURSOR;
+   function LoadCursorA
+     (instance : HINSTANCE;
+      lpCursorName : LPCSTR)
+      return HCURSOR;
    pragma Import (Stdcall, LoadCursorA, "LoadCursorA");
    
-   function LoadBitmapA(
-                        instance : HINSTANCE;
-                        lpBitmapName : LPCSTR
-                       ) return HBITMAP;
+   function LoadBitmapA
+     (instance : HINSTANCE;
+      lpBitmapName : LPCSTR)
+      return HBITMAP;
    pragma Import (Stdcall, LoadBitmapA, "LoadBitmapA");
    
-   function LoadImageA(
-                       instance : HINSTANCE;
-                       name : LPCSTR;
-                       imgtype : UINT;
-                       cx : Interfaces.C.int;
-                       cy : Interfaces.C.int;
-                       fuLoad : UINT
-                      ) return HANDLE;
+   function LoadImageA
+     (instance : HINSTANCE;
+      name : LPCSTR;
+      imgtype : UINT;
+      cx : Interfaces.C.int;
+      cy : Interfaces.C.int;
+      fuLoad : UINT)
+      return HANDLE;
    pragma Import (Stdcall, LoadImageA, "LoadImageA");
    
    function GetLastError return DWORD;
@@ -235,41 +241,40 @@ package body Overkill.Gui.W32 is
    FORMAT_MESSAGE_FROM_SYSTEM : constant := 16#00001000#;
    FORMAT_MESSAGE_IGNORE_INSERTS : constant := 16#00000200#;
    
-   function FormatMessageA(
-                          dwFlags : DWORD;
-                          lpSource : LPVOID;
-                          dwMessageId : DWORD;
-                          dwLanguageId : DWORD;
-                          lpBuffer : out LPCSTR;
-                          nSize : DWORD
-                         ) return DWORD;
+   function FormatMessageA
+     (dwFlags : DWORD;
+      lpSource : LPVOID;
+      dwMessageId : DWORD;
+      dwLanguageId : DWORD;
+      lpBuffer : out LPCSTR;
+      nSize : DWORD)
+      return DWORD;
    pragma Import (Stdcall, FormatMessageA, "FormatMessageA");
    
-   function MessageBoxA(
-                       window : HWND;
-                       lpText : LPCSTR;
-                       lpCaption : LPCSTR;
-                       uType : UINT
-                      ) return Interfaces.C.int;
+   function MessageBoxA
+     (window : HWND;
+      lpText : LPCSTR;
+      lpCaption : LPCSTR;
+      uType : UINT)
+      return Interfaces.C.int;
    pragma Import (Stdcall, MessageBoxA, "MessageBoxA");
    
    MB_ICONERROR : constant := 16#00000010#;
    MB_OK : constant := 16#00000000#;
    
-   function DefWindowProcA(
-                          handle : HWND;
-                          uMsg : UINT;
-                          w : WPARAM;
-                          l : LPARAM
-                         ) return LRESULT;
+   function DefWindowProcA
+     (handle : HWND;
+      uMsg : UINT;
+      w : WPARAM;
+      l : LPARAM)
+      return LRESULT;
    pragma Import (Stdcall, DefWindowProcA, "DefWindowProcA");
    
-   function GetMessageA(
-                       msg : LPMSG;
-                       handle : HWND;
-                       wMsgFilterMin : UINT;
-                       wMsgFilterMax : UINT
-                      ) return BOOL;
+   function GetMessageA
+     (msg : LPMSG;
+      handle : HWND;
+      wMsgFilterMin : UINT;
+      wMsgFilterMax : UINT) return BOOL;
    pragma Import (Stdcall, GetMessageA, "GetMessageA");
    
    function TranslateMessage(msg : LPMSG) return BOOL;
@@ -345,16 +350,16 @@ package body Overkill.Gui.W32 is
       return Integer(Interfaces.Shift_Right(Interfaces.Unsigned_32(v and 16#FFFF0000#), 16));
    end HIWORD;
    
-   function BeginPaint(
-                       win : HWND;
-                       lpPaint : out PAINTSTRUCT
-                      ) return HDC;
+   function BeginPaint
+     (win : HWND;
+      lpPaint : out PAINTSTRUCT)
+      return HDC;
    pragma Import (Stdcall, BeginPaint, "BeginPaint");
    
-   function EndPaint(
-                     win : HWND;
-                     lpPaint : access constant PAINTSTRUCT
-                    ) return BOOL;
+   function EndPaint
+     (win : HWND;
+      lpPaint : access constant PAINTSTRUCT)
+      return BOOL;
    pragma Import (Stdcall, EndPaint, "EndPaint");
    
    function GetWindowRect
@@ -363,16 +368,16 @@ package body Overkill.Gui.W32 is
       return BOOL;
    pragma Import (Stdcall, GetWindowRect, "GetWindowRect");
    
-   function CreateCompatibleBitmap(
-                                   dc : HDC;
-                                   cx, cy : Interfaces.C.int
-                                  ) return HBITMAP;
+   function CreateCompatibleBitmap
+     (dc : HDC;
+      cx, cy : Interfaces.C.int)
+      return HBITMAP;
    pragma Import (Stdcall, CreateCompatibleBitmap, "CreateCompatibleBitmap");
    
-   function SelectObject(
-                         dc : HDC;
-                         h : HGDIOBJ
-                        ) return HGDIOBJ;
+   function SelectObject
+     (dc : HDC;
+      h : HGDIOBJ)
+      return HGDIOBJ;
    pragma Import (Stdcall, SelectObject, "SelectObject");
    
    function BitBlt
@@ -403,20 +408,46 @@ package body Overkill.Gui.W32 is
       return HWND;
    pragma Import (Stdcall, SetCapture, "SetCapture");
    
-   function callback(
-                     handle : HWND;
-                     uMsg : UINT;
-                     w : WPARAM;
-                     l : LPARAM
-                    ) return LRESULT;
+   function DrawText
+     (Handle : HDC;
+      lpchText : LPCSTR;
+      cchText : Interfaces.C.int;
+      lprc : access RECT;
+      format : UINT)
+      return int;
+   pragma Import (Stdcall, DrawText, "DrawTextA");
+   
+   function GetStockObject
+     (i : int)
+      return HGDIOBJ;
+   pragma Import (Stdcall, GetStockObject, "GetStockObject");
+   
+   function SetBkColor
+     (Handle : HDC;
+      Color : COLORREF)
+      return COLORREF;
+   pragma Import (Stdcall, SetBkColor, "SetBkColor");
+   
+   function SetTextColor
+     (Handle : HDC;
+      Color : COLORREF)
+      return COLORREF;
+   pragma Import (Stdcall, SetTextColor, "SetTextColor");
+   
+   function callback
+     (handle : HWND;
+      uMsg : UINT;
+      w : WPARAM;
+      l : LPARAM) 
+      return LRESULT;
    pragma Convention (Stdcall, callback);
    
-   function callback(
-                     handle : HWND;
-                     uMsg : UINT;
-                     w : WPARAM;
-                     l : LPARAM
-                    ) return LRESULT is
+   function callback
+     (handle : HWND;
+      uMsg : UINT;
+      w : WPARAM;
+      l : LPARAM)
+      return LRESULT is
       sc : access Skin_Callbacks;
       previous_cursor : HCURSOR;
    begin
@@ -579,10 +610,11 @@ package body Overkill.Gui.W32 is
          Put_Line ("null instance");
          raise Program_Error;
       end if;
-      class.icon := LoadIconA(null, 32512);
+      class.icon := LoadIconA(Instance, 1);
       if class.icon = HICON(Null_Address) then
          -- error(GetLastError);
          Put_Line ("Error loading default window icon.");
+         raise Program_Error;
       end if;
       class.cursor := LoadCursorA(HINSTANCE(Null_Address), MAKEINTRESOURCE(System'To_Address(IDC_ARROW)));
       if class.cursor = null then
@@ -744,9 +776,11 @@ package body Overkill.Gui.W32 is
       null;
    end W32_Set_Not_Topmost;
    
-   procedure W32_Resize_Window(w : Window_Type; width : Integer; height : Integer) is
+   procedure W32_Resize_Window(w : Window_Type; width : Integer; height : Integer)
+   is
+      Ret : BOOL;
    begin
-      null;
+      Ret := SetWindowPos (HWND (w), NULL, 0, 0, int (Width), int (Height), SWP_NOMOVE or SWP_NOZORDER);
    end W32_Resize_Window;
    
    procedure W32_Get_Window_Rect(rect : Color) is
@@ -795,17 +829,16 @@ package body Overkill.Gui.W32 is
       ret2 : HGDIOBJ;
    begin
       ret2 := SelectObject(bmp_dc, HGDIOBJ(p));
-      ret1 := BitBlt(
-                     mem_dc,
-                     Interfaces.C.int(dst_x),
-                     Interfaces.C.int(dst_y),
-                     Interfaces.C.int(w),
-                     Interfaces.C.int(h),
-                     bmp_dc,
-                     Interfaces.C.int(src_x),
-                     Interfaces.C.int(src_y),
-                     SRCCOPY
-                    );
+      ret1 := BitBlt
+        (mem_dc,
+         Interfaces.C.int(dst_x),
+         Interfaces.C.int(dst_y),
+         Interfaces.C.int(w),
+         Interfaces.C.int(h),
+         bmp_dc,
+         Interfaces.C.int(src_x),
+         Interfaces.C.int(src_y),
+         SRCCOPY);
       Put_Line("dst_x=" & dst_x'Image & " dst_y=" & dst_y'Image & " w=" & w'Image & " h=" & h'Image & " src_x=" & src_x'Image & " src_y=" & src_y'Image);
    end W32_Draw_Image;
    
@@ -818,6 +851,28 @@ package body Overkill.Gui.W32 is
    begin
       null;
    end W32_Draw_Filled_Rectangle;
+   
+   procedure W32_Draw_Text
+     (x, y, w, h : Integer;
+      Text : String)
+   is
+      Font : HFONT := HFONT (GetStockObject (ANSI_VAR_FONT));
+      C_Text : aliased char_array := To_C (Text);
+      Rectangle : aliased RECT := (long (x), long (y), long (x + w), long (y + h));
+      Ret : int;
+      hOldFont : HFONT;
+      Old_Color : COLORREF;
+   begin
+      Old_Color := SetBkColor (mem_dc, 16#00000000#);
+      Old_Color := SetTextColor (mem_dc, 16#00FFFFFF#);
+      hOldFont := HFONT (SelectObject(mem_dc, HGDIOBJ (Font)));
+      Ret := DrawText
+        (Handle => mem_dc,
+         lpchText => LPCSTR (C_Text'Address),
+         cchText => Text'Length,
+         lprc => Rectangle'Access,
+         format => 0);
+   end W32_Draw_Text;
    
    procedure W32_End_Drawing
    is
@@ -839,8 +894,12 @@ package body Overkill.Gui.W32 is
    end W32_Capture_Mouse;
    
    procedure W32_Release_Mouse is
+      function ReleaseCapture return BOOL;
+      pragma Import (Stdcall, ReleaseCapture, "ReleaseCapture");
+      
+      R : BOOL;
    begin
-      null;
+      R := ReleaseCapture;
    end W32_Release_Mouse;
    
    function W32_Load_Cursor(filename : String) return Cursor is

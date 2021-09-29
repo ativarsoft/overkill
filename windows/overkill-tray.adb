@@ -79,7 +79,7 @@ package body Overkill.Tray is
       Icon_Data.uID := 0;
       Icon_Data.uFlags := NIF_ICON or NIF_TIP;
       Icon_Data.icon := LoadIconA (Instance, 1);
-      Icon_Data.szTip := Overwrite (Icon_Data.szTip, 1, "Yummy");
+      Icon_Data.szTip := Overwrite (Icon_Data.szTip, 1, "Overkill");
       Ret := Shell_NotifyIconA (NIM_ADD, Icon_Data);
       if Ret = 0 then
          raise Program_Error with "Failed to create tray icon.";

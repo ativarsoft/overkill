@@ -7,6 +7,7 @@ use Interfaces.C.Strings;
 with Ada.Exceptions;
 with Overkill.Plugin.Output;
 use Overkill.Plugin.Output;
+with System;
 
 package body Overkill.Plugin.W32 is
    
@@ -17,11 +18,11 @@ package body Overkill.Plugin.W32 is
    
    function GetProcAddress
      (Module_Handle : Library_Type;
-      lpProcName : chars_ptr)
+      lpProcName : System.Address)
       return Get_In_Module_Type;
    function GetProcAddress
      (Module_Handle : Library_Type;
-      lpProcName : chars_ptr)
+      lpProcName : System.Address)
       return Get_Out_Module_Type;
    pragma Import (Stdcall, GetProcAddress, "GetProcAddress");
    
@@ -33,10 +34,11 @@ package body Overkill.Plugin.W32 is
       Symbol : String)
       return Get_In_Module_Type
    is
+      C_Symbol : char_array := To_C (Symbol);
       Get_In_Module : Get_In_Module_Type;
       RC : DWORD;
    begin
-      Get_In_Module := GetProcAddress (Library, New_String (Symbol));
+      Get_In_Module := GetProcAddress (Library, C_Symbol'Address);
       if Get_In_Module = null then
          RC := GetLastError;
          raise Program_Error with "Failed to get symbol " & Symbol & ". GetLastError returned " & RC'Image & ".";
@@ -49,10 +51,11 @@ package body Overkill.Plugin.W32 is
       Symbol : String)
       return Get_Out_Module_Type
    is
+      C_Symbol : char_array := To_C (Symbol);
       Get_Out_Module : Get_Out_Module_Type;
       RC : DWORD;
    begin
-      Get_Out_Module := GetProcAddress (Library, New_String (Symbol));
+      Get_Out_Module := GetProcAddress (Library, C_Symbol'Address);
       if Get_Out_Module = null then
          RC := GetLastError;
          raise Program_Error with "Failed to get symbol " & Symbol & ". GetLastError returned " & RC'Image & ".";

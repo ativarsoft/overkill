@@ -53,6 +53,7 @@ package Overkill.Gui is
    type Gui_Draw_Image is access procedure (p : Pixmap; dst_x : Integer; dst_y : Integer; w : Integer; h : Integer; src_x : Integer; src_y : Integer);
    type Gui_Draw_Image_Double is access procedure (p : Pixmap; dst_x : Integer; dst_y : Integer; w : Integer; h : Integer; src_x : Integer; src_y : Integer);
    type Gui_Draw_Filled_Rectangle is access procedure (x : Integer; y : Integer; w : Integer; h : Integer; c : Color);
+   type Gui_Draw_Text is access procedure (x, y, w, h : Integer; Text : String);
    type Gui_End_Drawing is access procedure;
    
    type Gui_Capture_Mouse is access procedure (w : Window_Type);
@@ -89,6 +90,7 @@ package Overkill.Gui is
       draw_image : Gui_Draw_Image;
       draw_image_double : Gui_Draw_Image_Double;
       draw_filled_rectangle : Gui_Draw_Filled_Rectangle;
+      Draw_Text : Gui_Draw_Text;
       end_drawing : Gui_End_Drawing;
 
       capture_mouse : Gui_Capture_Mouse;

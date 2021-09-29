@@ -25,6 +25,9 @@ package Overkill.Gui.W32 is
    procedure W32_Draw_Image(p : Pixmap; dst_x : Integer; dst_y : Integer; w : Integer; h : Integer; src_x : Integer; src_y : Integer);
    procedure W32_Draw_Image_Double(p : Pixmap; dst_x : Integer; dst_y : Integer; w : Integer; h : Integer; src_x : Integer; src_y : Integer);
    procedure W32_Draw_Filled_Rectangle(x : Integer; y : Integer; w : Integer; h : Integer; c : Color);
+   procedure W32_Draw_Text
+     (x, y, w, h : Integer;
+      Text : String);
    procedure W32_End_Drawing;
 
    procedure W32_Capture_Mouse(w : Window_Type);
@@ -38,41 +41,43 @@ package Overkill.Gui.W32 is
    procedure W32_Open_File_Dialog;
    procedure W32_Open_Dir_Dialog;
 
-   w32_gui : Overkill.Gui.Gui_Dispatch := (
-                                  init => W32_Init'Access,
-                                  quit => W32_Quit'Access,
 
-                                  create_window => W32_Create_Window'Access,
-                                  destroy_window => W32_Destroy_Window'Access,
-                                  event_handler => W32_Event_Handler'Access,
-                                  show_window => W32_Show_Window'Access,
-                                  hide_window => W32_Hide_Window'Access,
-                                  move_window => W32_Move_Window'Access,
-                                  redraw_window => W32_Redraw_Window'Access,
-                                  set_topmost => W32_Set_Topmost'Access,
-                                  set_not_topmost => W32_Set_Not_Topmost'Access,
-                                  resize_window => W32_Resize_Window'Access,
-                                  get_window_rect => W32_Get_Window_Rect'Access,
-                                  minimize_window => W32_Minimize_Window'Access,
 
-                                  load_image => W32_Load_Image'Access,
-                                  unload_image => W32_Unload_Image'Access,
-                                  begin_drawing => W32_Begin_Drawing'Access,
-                                  draw_image => W32_Draw_Image'Access,
-                                  draw_image_double => W32_Draw_Image_Double'Access,
-                                  draw_filled_rectangle => W32_Draw_Filled_Rectangle'Access,
-                                  end_drawing => W32_End_Drawing'Access,
+   w32_gui : aliased constant Overkill.Gui.Gui_Dispatch :=
+     (init => W32_Init'Access,
+      quit => W32_Quit'Access,
 
-                                  capture_mouse => W32_Capture_Mouse'Access,
-                                  release_mouse => W32_Release_Mouse'Access,
-                                  load_cursor => W32_Load_Cursor'Access,
-                                  unload_cursor => W32_Unload_Cursor'Access,
-                                  set_cursor => W32_Set_Cursor'Access,
+      create_window => W32_Create_Window'Access,
+      destroy_window => W32_Destroy_Window'Access,
+      event_handler => W32_Event_Handler'Access,
+      show_window => W32_Show_Window'Access,
+      hide_window => W32_Hide_Window'Access,
+      move_window => W32_Move_Window'Access,
+      redraw_window => W32_Redraw_Window'Access,
+      set_topmost => W32_Set_Topmost'Access,
+      set_not_topmost => W32_Set_Not_Topmost'Access,
+      resize_window => W32_Resize_Window'Access,
+      get_window_rect => W32_Get_Window_Rect'Access,
+      minimize_window => W32_Minimize_Window'Access,
 
-                                  check_glue => W32_Check_Glue'Access,
+      load_image => W32_Load_Image'Access,
+      unload_image => W32_Unload_Image'Access,
+      begin_drawing => W32_Begin_Drawing'Access,
+      draw_image => W32_Draw_Image'Access,
+      draw_image_double => W32_Draw_Image_Double'Access,
+      draw_filled_rectangle => W32_Draw_Filled_Rectangle'Access,
+      Draw_Text => W32_Draw_Text'Access,
+      end_drawing => W32_End_Drawing'Access,
 
-                                  open_file_dialog => W32_Open_File_Dialog'Access,
-                                  open_dir_dialog => W32_Open_Dir_Dialog'Access
-                                 );
+      capture_mouse => W32_Capture_Mouse'Access,
+      release_mouse => W32_Release_Mouse'Access,
+      load_cursor => W32_Load_Cursor'Access,
+      unload_cursor => W32_Unload_Cursor'Access,
+      set_cursor => W32_Set_Cursor'Access,
+
+      check_glue => W32_Check_Glue'Access,
+
+      open_file_dialog => W32_Open_File_Dialog'Access,
+      open_dir_dialog => W32_Open_Dir_Dialog'Access);
 
 end Overkill.Gui.W32;
