@@ -66,19 +66,21 @@ package body Overkill.Gui.W32 is
    type HANDLE is new System.Address;
    type HWND is new Window_Type;
    type LPCSTR is new System.Address;
+   type LPSTR is new System.Address;
    type HMENU is new System.Address;
    type HINSTANCE is new System.Address;
    --type HINSTANCE2 is access all Null_Record;
-   type HFONT is access all Null_Record;
+   type HFONT is new System.Address;
    type LPVOID is new System.Address;
+   type WORD is new Interfaces.C.unsigned_short;
    type DWORD is new Interfaces.C.unsigned;
    type BOOL is new Interfaces.C.int;
    type UINT is new Interfaces.C.unsigned;
    type ATOM is new System.Address;
    type WNDPROC is new System.Address;
    type HICON is new System.Address;
-   type HCURSOR is access all Null_Record;
-   type HBITMAP is access Null_Record;
+   type HCURSOR is new System.Address;
+   type HBITMAP is new System.Address;
    type HBRUSH is new System.Address;
    type HMODULE is new System.Address;
    type LRESULT is new Interfaces.C.unsigned;
@@ -86,9 +88,11 @@ package body Overkill.Gui.W32 is
    type LPARAM is new Interfaces.C.unsigned;
    type LPMSG is new System.Address;
    type HDC is new System.Address;
-   type HGDIOBJ is access all Null_Record;
+   type HGDIOBJ is new System.Address;
    type LONG_PTR is access Null_Record;
    type COLORREF is new DWORD;
+   type LPOFNHOOKPROC is access all Null_Record;
+   type LPEDITMENU is access all Null_Record;
    
    --
    -- Records
@@ -134,6 +138,34 @@ package body Overkill.Gui.W32 is
       rgbReserved : String(1..32);
    end record;
    
+   type OPENFILENAMEA is record
+      lStructSize : DWORD;
+      hwndOwner : HWND;
+      Instance : HINSTANCE;
+      lpstrFilter : LPCSTR;
+      lpstrCustomFilter : LPSTR;
+      nMaxCustFilter : DWORD;
+      nFilterIndex : DWORD;
+      lpstrFile : LPSTR;
+      nMaxFile : DWORD;
+      lpstrFileTitle : LPSTR;
+      nMaxFileTitle : DWORD;
+      lpstrInitialDir : LPCSTR;
+      lpstrTitle : LPCSTR;
+      Flags : DWORD;
+      nFileOffset : WORD;
+      nFileExtension : WORD;
+      lpstrDefExt : LPCSTR;
+      lCustData : LPARAM;
+      lpfnHook : LPOFNHOOKPROC;
+      lpTemplateName : LPCSTR;
+      --lpEditInfo : LPEDITMENU;
+      --lpstrPrompt : LPCSTR;
+      pvReserved : System.Address;
+      dwReserved : DWORD;
+      FlagsEx : DWORD;
+   end record;
+   
    --
    -- Global variables
    --
@@ -170,7 +202,7 @@ package body Overkill.Gui.W32 is
                             hWndParent : HWND;
                             menu : HMENU;
                             instance : HINSTANCE;
-                            lpParam : access Skin_Callbacks
+                            lpParam : in Skin_Callbacks
                            ) return HWND;
    pragma Import (Stdcall, CreateWindowExA, "CreateWindowExA");
    
@@ -190,7 +222,6 @@ package body Overkill.Gui.W32 is
    --function HWND_To_Window is new Ada.Unchecked_Conversion(HWND, Window);
    --function Window_To_HWND is new Ada.Unchecked_Conversion(Window, HWND);
    function MAKEINTRESOURCE is new Ada.Unchecked_Conversion(System.Address, LPCSTR);
-   function MAKEINTRESOURCE is new Ada.Unchecked_Conversion(Interfaces.C.int, LPCSTR);
    
    function HANDLE_To_Pixmap is new Ada.Unchecked_Conversion(HANDLE, Pixmap);
    function HANDLE_To_Cursor is new Ada.Unchecked_Conversion(HANDLE, Cursor);
@@ -306,7 +337,7 @@ package body Overkill.Gui.W32 is
    function SetWindowLongPtrA
      (win : HWND;
       nIndex : Interfaces.C.int;
-      dwNewLong : access Skin_Callbacks)
+      dwNewLong : in Skin_Callbacks)
       return LONG_PTR;
    pragma Import (Stdcall, SetWindowLongPtrA, "SetWindowLongA");
    
@@ -434,6 +465,9 @@ package body Overkill.Gui.W32 is
       return COLORREF;
    pragma Import (Stdcall, SetTextColor, "SetTextColor");
    
+   function GetOpenFileName (p : access OPENFILENAMEA) return BOOL;
+   pragma Import (Stdcall, GetOpenFileName, "GetOpenFileNameA");
+   
    function callback
      (handle : HWND;
       uMsg : UINT;
@@ -451,10 +485,6 @@ package body Overkill.Gui.W32 is
       sc : access Skin_Callbacks;
       previous_cursor : HCURSOR;
    begin
-      if False then
-         Put_Line ("callback");
-      end if;
-      
       sc := GetWindowLongPtrA(handle, GWLP_USERDATA);
       if sc /= null then
          Put_Line("Skin callback is " & System.Address_Image(sc.all'Address));
@@ -475,12 +505,7 @@ package body Overkill.Gui.W32 is
          when WM_ERASEBKGND => -- prevent flickering
             return 1;
          when WM_SETCURSOR =>
-            if current_cursor = null then
-               Put_Line("WM_SETCURSOR: error: current cursor is null.");
-            else
-               Put_Line("WM_SETCURSOR" & System.Address_Image(current_cursor.all'Address));
-            end if;
-            if current_cursor /= null then
+            if current_cursor /= HCURSOR (Null_Address) then
                previous_cursor := SetCursor(current_cursor);
             end if;
             return 1;
@@ -491,45 +516,34 @@ package body Overkill.Gui.W32 is
       if sc /= null then
          case uMsg is
             when WM_PAINT =>
-               Put_Line("WM_PAINT");
-               sc.draw.all;
+               sc.draw.all (Current_Skin.all);
             when WM_LBUTTONDOWN =>
-               if False then
-                  Put_Line("WM_LBUTTONDOWN");
-               end if;
                if sc.mouse_down /= null then
-                  sc.mouse_down(GET_X_LPARAM(l), GET_Y_LPARAM(l));
+                  sc.mouse_down(Current_Skin.all, GET_X_LPARAM(l), GET_Y_LPARAM(l));
                end if;
             when WM_LBUTTONUP =>
-               if False then
-                  Put_Line("WM_LBUTTONUP");
-               end if;
                if sc.mouse_up /= null then
-                  sc.mouse_up(GET_X_LPARAM(l), GET_Y_LPARAM(l));
+                  sc.mouse_up(Current_Skin.all, GET_X_LPARAM(l), GET_Y_LPARAM(l));
                end if;
             when WM_MOUSEMOVE =>
-               if True then
-                  Put_Line("WM_MOUSEMOVE" & " (" & Integer'Image(GET_X_LPARAM(l)) & "," & Integer'Image(GET_Y_LPARAM(l)) & ")");
-               end if;
                if sc.mouse_move /= null then
-                  sc.mouse_move(GET_X_LPARAM(l), GET_Y_LPARAM(l));
+                  sc.mouse_move(Current_Skin.all, GET_X_LPARAM(l), GET_Y_LPARAM(l));
                end if;
             when WM_SIZE =>
                if sc.resize /= null then
-                  sc.resize(LOWORD(DWORD(l)), HIWORD(DWORD(l)));
+                  sc.resize(Current_Skin.all, LOWORD(DWORD(l)), HIWORD(DWORD(l)));
                end if;
             when WM_SETFOCUS =>
                if sc.focus /= null then
-                  sc.focus(True);
+                  sc.focus(Current_Skin.all, True);
                end if;
             when WM_KILLFOCUS =>
                if sc.focus /= null then
-                  sc.focus(False);
+                  sc.focus(Current_Skin.all, False);
                end if;
             when WM_RBUTTONUP =>
                null;
             when others =>
-               Put_Line("Other message.");
                null;
          end case;
       end if;
@@ -617,7 +631,7 @@ package body Overkill.Gui.W32 is
          raise Program_Error;
       end if;
       class.cursor := LoadCursorA(HINSTANCE(Null_Address), MAKEINTRESOURCE(System'To_Address(IDC_ARROW)));
-      if class.cursor = null then
+      if class.cursor = HCURSOR (Null_Address) then
          -- error(GetLastError);
          Put_Line ("Error loading default window cursor.");
       end if;
@@ -662,7 +676,7 @@ package body Overkill.Gui.W32 is
       end if;
    end W32_Quit;
    
-   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : access Skin_Callbacks) return Window_Type is
+   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : Skin_Callbacks) return Window_Type is
       c_class_name : Interfaces.C.char_array := Interfaces.C.To_C(class_name);
       c_title : Interfaces.C.char_array := Interfaces.C.To_C(title);
       c_x : Interfaces.C.int := Interfaces.C.int(x);
@@ -674,9 +688,6 @@ package body Overkill.Gui.W32 is
       ret1 : LONG_PTR;
    begin
       dwStyle := WS_MINIMIZEBOX or WS_POPUP;
-      if callbacks /= null then
-         Put_Line("sc1: " & System.Address_Image(callbacks.all'Address));
-      end if;
       r := CreateWindowExA
         (0,
          LPCSTR (c_class_name'Address),
@@ -690,11 +701,7 @@ package body Overkill.Gui.W32 is
          HMENU (Null_Address),
          HINSTANCE(Null_Address),
          callbacks);
-      if False then
-         --Put_Line("HWND: " & System.Address_Image(System.Address(r)));
-         null;
-      end if;
-      if r = null then
+      if r = HWND(Null_Address) then
          error(GetLastError);
          raise Program_Error;
       end if;
@@ -717,7 +724,7 @@ package body Overkill.Gui.W32 is
       r2 : LRESULT;
    begin
       loop
-         r1 := GetMessageA(LPMSG(message'Address), null, 0, 0);
+         r1 := GetMessageA(LPMSG(message'Address), HWND(Null_Address), 0, 0);
          exit when r1 = 0;
          r1 := TranslateMessage(LPMSG(message'Address));
          r2 := DispatchMessageA(LPMSG(message'Address));
@@ -755,7 +762,7 @@ package body Overkill.Gui.W32 is
       r.left := r.left + long (x);
       r.top := r.top + long (y);
       ret := SetWindowPos
-        (HWND (w), null,
+        (HWND (w), HWND(Null_Address),
          int (r.left), int (r.top), 0, 0,
          SWP_NOSIZE or SWP_NOZORDER);
    end W32_Move_Window;
@@ -780,7 +787,7 @@ package body Overkill.Gui.W32 is
    is
       Ret : BOOL;
    begin
-      Ret := SetWindowPos (HWND (w), NULL, 0, 0, int (Width), int (Height), SWP_NOMOVE or SWP_NOZORDER);
+      Ret := SetWindowPos (HWND (w), HWND(Null_Address), 0, 0, int (Width), int (Height), SWP_NOMOVE or SWP_NOZORDER);
    end W32_Resize_Window;
    
    procedure W32_Get_Window_Rect(rect : Color) is
@@ -925,9 +932,47 @@ package body Overkill.Gui.W32 is
       return False;
    end W32_Check_Glue;
 
-   procedure W32_Open_File_Dialog is
+   procedure W32_Open_File_Dialog
+   is
+      package C renames Interfaces.C;
+      ofn : aliased OPENFILENAMEA :=
+        (lStructSize => 0,
+         hwndOwner => HWND(Null_Address),
+         Instance => HINSTANCE (Null_Address),
+         lpstrFilter => LPCSTR (Null_Address),
+         lpstrCustomFilter => LPSTR (Null_Address),
+         nMaxCustFilter => 0,
+         nFilterIndex => 0,
+         lpstrFile => LPSTR (Null_Address),
+         nMaxFile => 0,
+         lpstrFileTitle => LPSTR (Null_Address),
+         nMaxFileTitle => 0,
+         lpstrInitialDir => LPCSTR (Null_Address),
+         lpstrTitle => LPCSTR (Null_Address),
+         Flags => 0,
+         nFileOffset => 0,
+         nFileExtension => 0,
+         lpstrDefExt => LPCSTR (Null_Address),
+         lCustData => 0,
+         lpfnHook => LPOFNHOOKPROC'(null),
+         lpTemplateName => LPCSTR (Null_Address),
+           ----lpEditInfo : LPEDITMENU;
+         ----lpstrPrompt : LPCSTR;
+         pvReserved => Null_Address,
+         dwReserved => 0,
+         FlagsEx => 0);
+      Ret : BOOL;
+      szFile : aliased char_array (1..256) := (others => C.nul);
+      Filter : aliased char_array := "All" & C.nul & "*.*" & C.nul & C.nul & C.nul;
+      Initial_Dir : aliased char_array (1..256) := (1 => '.', others => C.nul);
    begin
-      null;
+      ofn.lStructSize := OPENFILENAMEA'Size / 8;
+      ofn.hwndOwner := HWND (main_window);
+      ofn.lpstrFile := LPSTR (szFile'Address);
+      ofn.nMaxFile := szFile'Length;
+      ofn.lpstrFilter := LPCSTR (Filter'Address);
+      ofn.nFilterIndex := 0;
+      Ret := GetOpenFileName (ofn'Access);
    end W32_Open_File_Dialog;
    
    procedure W32_Open_Dir_Dialog is

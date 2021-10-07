@@ -8,10 +8,11 @@ with Overkill.Platform;
 use Overkill.Platform;
 with Overkill.Debug;
 use Overkill.Debug;
+with System;
 
 package body Overkill.Tray is
    
-   type HWND is access all Null_Record;
+   type HWND is new System.Address;
    type HICON is access Null_Record;
    type HMODULE is access Null_Record;
    type HINSTANCE is access all Null_Record;

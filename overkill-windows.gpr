@@ -12,7 +12,7 @@ project Overkill.Windows extends "overkill.gpr" is
 
    package Linker is
       for Default_Switches ("Ada") use
-        ("-lgdi32", "windows-obj/resources.o", "-mwindows");
+        ("-lgdi32", "-lComdlg32", "windows-obj/resources.o", "-mwindows");
    end Linker;
 
    package Compiler is

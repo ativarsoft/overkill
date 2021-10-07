@@ -6,7 +6,7 @@ package Overkill.Gui.W32 is
    procedure W32_Init;
    procedure W32_Quit;
 
-   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : access Skin_Callbacks) return Window_Type;
+   function W32_Create_Window(x : Integer; y: Integer; w : Integer; h : Integer; title : String; callbacks : in Skin_Callbacks) return Window_Type;
    procedure W32_Destroy_Window(w : Window_Type);
    procedure W32_Event_Handler;
    procedure W32_Show_Window(w : Window_Type);

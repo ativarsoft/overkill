@@ -23,18 +23,19 @@ use System;
 
 procedure Overkill.Main
 is
-   Skin : Classic_Skin_Type;
    Discovery : Discovery_Type;
    Tray : Tray_Type;
 begin
    Overkill.Gui.gui := w32_gui;
    Overkill.Gui.gui.init.all;
-   New_Classic (Skin, Overkill.Gui.gui);
+   --Overkill.Gui.Current_Skin := Skin'Access;
+   New_Classic (Current_Skin.all, Overkill.Gui.gui);
+   --main_window := Current_Skin.main_window;
    --Tray.Init;
    --Menus.Init;
    Discovery.New_Discovery; -- Must be called after New_Classic
    --Tray.Show;
-   Skin.Run;
+   Run (Current_Skin.all);
    --Menus.Quit;
    --Tray.Quit;
    gui.gui.quit.all;
