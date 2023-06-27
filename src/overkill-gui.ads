@@ -4,6 +4,8 @@ use Overkill.Platform;
 with System;
 
 package Overkill.Gui is
+
+   pragma Elaborate_Body;
    
    --type Window is access Null_Record;
    type Pixmap is new System.Address;

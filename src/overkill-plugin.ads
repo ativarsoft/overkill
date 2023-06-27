@@ -6,6 +6,8 @@ with Overkill.Platform;
 use Overkill.Platform;
 
 package Overkill.Plugin is
+
+   pragma Elaborate_Body;
    
    type Pcm_Data_Type is access unsigned_short;
    

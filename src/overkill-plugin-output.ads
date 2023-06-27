@@ -7,6 +7,8 @@ use Overkill.Platform;
 
 package Overkill.Plugin.Output is
 
+   pragma Elaborate_Body;
+
    type Configure_Type is access procedure (parent : Window_Type);
    type About is access procedure(parent : Window_Type);
 
