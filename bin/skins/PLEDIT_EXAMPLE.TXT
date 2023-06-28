@@ -1,0 +1,11 @@
+//USE THIS FILE ONLY TO REFERENCE THE PLEDIT COLORS
+//
+//
+[Text]
+Normal=#00FF00 //Color of the regular text (Playlist). 
+Current=#FFFFFF //Color of the current track text (Playlist). 
+NormalBG=#000000 //Background for normal text (Playlist). 
+SelectedBG=#0000FF //Background for the selected text (Playlist) 
+MbFG=#00FF00 //Text color in thestatus bar. (video / MiniBrowser) 
+MbBG=#000000 //Text background in the status bar. (video / MiniBrowser) 
+Font=Arial //Font face that's used in both windows 

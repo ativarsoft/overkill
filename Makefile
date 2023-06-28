@@ -44,7 +44,9 @@ W32ALI=windows-obj/overkill-gui-w32.ali \
 
 RESOBJ=windows-obj/resources.o
 
-all: bin/overkill.exe
+DOWNLOADS=downloads/winamp200.exe
+
+all: bin/overkill.exe $(DOWNLOADS)
 
 obj/%.o: src/%.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
@@ -65,6 +67,7 @@ overkill.o: overkill.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
 bin/overkill.exe:
+	mkdir -p bin
 	mkdir -p obj
 	mkdir -p windows-obj
 	$(MAKE) clean
@@ -74,11 +77,15 @@ bin/overkill.exe:
 	$(GNATBIND) $(ALI) $(W32ALI)
 	$(GNATLINK) $(GNATLINKFLAGS) -o $@ obj/overkill-main.ali
 
+$(DOWNLOADS):
+	$(MAKE) -C downloads
+
 clean:
 	rm -f obj/*.o obj/*.ali
 	rm -f windows-obj/*.o windows-obj/*.ali
 	rm -f *.exe *.o *.ali *.adb *.ads
 	rm -f bin/*.exe
+	$(MAKE) -C downloads clean
 
 .PHONY: overkill.exe clean
 

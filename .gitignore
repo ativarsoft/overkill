@@ -1,0 +1,6 @@
+downloads/*.exe
+downloads/*.zip
+downloads/cache/
+bin/plugins/
+bin/overkill.exe
+
