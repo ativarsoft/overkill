@@ -41,7 +41,7 @@ W32ALI=windows-obj/overkill-gui-w32.ali \
   windows-obj/overkill-tray.ali         \
   windows-obj/overkill-platform.ali
 
-all: overkill.exe
+all: bin/overkill.exe
 
 obj/%.o: src/%.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
@@ -56,7 +56,7 @@ windows/: $(W32OBJ)
 overkill.o: overkill.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
-overkill.exe:
+bin/overkill.exe:
 	mkdir -p obj
 	mkdir -p windows-obj
 	$(MAKE) clean
