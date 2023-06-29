@@ -5,6 +5,8 @@ use Overkill.Debug;
 with Interfaces.C.Strings;
 use Interfaces.C.Strings;
 with Ada.Exceptions;
+with Overkill.Plugin.Input;
+use Overkill.Plugin.Input;
 with Overkill.Plugin.Output;
 use Overkill.Plugin.Output;
 with System;

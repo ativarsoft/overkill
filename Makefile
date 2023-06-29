@@ -17,6 +17,7 @@ OBJ=obj/overkill-main.o         \
   obj/overkill-menus.o          \
   obj/overkill-gui.o            \
   obj/overkill-plugin.o         \
+  obj/overkill-plugin-input.o   \
   obj/overkill-plugin-output.o  \
   obj/overkill-interfaces.o
 
@@ -29,6 +30,7 @@ ALI=obj/overkill-main.ali        \
   obj/overkill-menus.ali         \
   obj/overkill-gui.ali           \
   obj/overkill-plugin.ali        \
+  obj/overkill-plugin-input.ali \
   obj/overkill-plugin-output.ali \
   obj/overkill-interfaces.ali
 
