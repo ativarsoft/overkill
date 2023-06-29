@@ -1,6 +1,7 @@
 with Ada.Containers.Vectors;
 with Ada.Strings.Unbounded;
 use Ada.Strings.Unbounded;
+with Overkill.Plugin.Input;
 
 package body Overkill.Playback is
 
@@ -18,8 +19,13 @@ package body Overkill.Playback is
       Entries : Playlist_Vectors.Vector;
       Current_Position : Natural;
    end record;
+   
+   type Playback_Type is record
+      In_Plugin : Overkill.Plugin.Input.In_Plugin_Type;
+   end record;
 
    Playlist : Playlist_Type;
+   Playback : Playback_Type;
 
    procedure Previous is
    begin
@@ -33,17 +39,17 @@ package body Overkill.Playback is
    
    procedure Play is
    begin
-      null;
+      Playback.In_Plugin.Play.all;
    end Play;
    
    procedure Pause is
    begin
-      null;
+      Playback.In_Plugin.Pause.all;
    end Pause;
    
    procedure Stop is
    begin
-      null;
+      Playback.In_Plugin.Stop.all;
    end Stop;
    
    procedure Next is
