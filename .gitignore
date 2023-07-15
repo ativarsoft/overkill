@@ -4,4 +4,6 @@ downloads/cache/
 bin/plugins/
 bin/overkill.exe
 default-loc.xml
+obj/
+windows-obj/
 
