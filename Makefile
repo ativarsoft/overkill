@@ -82,6 +82,16 @@ bin/overkill.exe:
 $(DOWNLOADS):
 	$(MAKE) -C downloads
 
+dependencies:
+ifneq ($(shell which apt),)
+	apt-get install $(shell cat dependencies.list)
+else
+	$(error No package manager found.)
+endif
+
+test:
+	@echo No tests avilable.
+
 clean:
 	rm -f obj/*.o obj/*.ali
 	rm -f windows-obj/*.o windows-obj/*.ali
@@ -89,5 +99,5 @@ clean:
 	rm -f bin/*.exe
 	$(MAKE) -C downloads clean
 
-.PHONY: overkill.exe clean
+.PHONY: overkill.exe clean test
 
