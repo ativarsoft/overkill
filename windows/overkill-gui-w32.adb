@@ -13,6 +13,8 @@ use Overkill.Debug;
 with Interfaces.C.Strings;
 with Overkill.Platform;
 use Overkill.Platform;
+with Bmp;
+use Bmp;
 
 package body Overkill.Gui.W32 is
    
@@ -27,6 +29,7 @@ package body Overkill.Gui.W32 is
    IMAGE_CURSOR        : constant := 2;
    LR_LOADFROMFILE     : constant := 16#10#;
    LR_CREATEDIBSECTION : constant := 16#2000#;
+   LR_LOADTRANSPARENT  : constant := 16#20#;
    
    -- Window styles
    WS_MINIMIZEBOX : constant := 16#00020000#;
@@ -801,16 +804,27 @@ package body Overkill.Gui.W32 is
    begin
       null;
    end W32_Minimize_Window;
-   
+
+   --  Windows is very picky about which program created the image.
+   --  So is Wine.
    function W32_Load_Image(filename : String) return Pixmap is
       bitmap : HANDLE;
       c_filename : Interfaces.C.char_array := Interfaces.C.To_C(filename);
-      Load_Image_Alpha : constant Boolean := True;
+      Use_Windows_Loader : constant Boolean := True;
    begin
-      if Load_Image_Alpha then
-         bitmap := LoadImageA(HINSTANCE(Null_Address), LPCSTR(c_filename'Address), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE or LR_CREATEDIBSECTION);
+      if Use_Windows_Loader then
+         bitmap := LoadImageA
+            (HINSTANCE(Null_Address),
+             LPCSTR(c_filename'Address),
+             IMAGE_BITMAP,
+             0, 0,
+             LR_LOADFROMFILE);
       else
-         bitmap := LoadImageA(HINSTANCE(Null_Address), LPCSTR(c_filename'Address), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+         declare
+            BMP: BMP_Type := Load_Image (filename);
+         begin
+            null;
+         end;
       end if;
       return HANDLE_To_Pixmap(bitmap);
    end W32_Load_Image;

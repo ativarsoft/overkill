@@ -2,11 +2,13 @@
 
 MAKE=make -j1
 GNAT=i686-w64-mingw32-gcc
-GNATFLAGS=-Isrc -Iwindows -Iresources
+GNATFLAGS=-Isrc -Iwindows -Iresources -Ibmp/src
 GNATBIND=i686-w64-mingw32-gnatbind
 GNATLINK=i686-w64-mingw32-gnatlink
 GNATLINKFLAGS=-lgdi32 -lcomdlg32 windows-obj/resources.o #-mwindows
 WINDRES=i686-w64-mingw32-windres
+
+export
 
 OBJ=obj/overkill-main.o         \
   obj/overkill.o                \
@@ -19,7 +21,8 @@ OBJ=obj/overkill-main.o         \
   obj/overkill-plugin.o         \
   obj/overkill-plugin-input.o   \
   obj/overkill-plugin-output.o  \
-  obj/overkill-interfaces.o
+  obj/overkill-interfaces.o     \
+  bmp/bmp.a
 
 ALI=obj/overkill-main.ali        \
   obj/overkill.ali               \
@@ -30,9 +33,10 @@ ALI=obj/overkill-main.ali        \
   obj/overkill-menus.ali         \
   obj/overkill-gui.ali           \
   obj/overkill-plugin.ali        \
-  obj/overkill-plugin-input.ali \
+  obj/overkill-plugin-input.ali  \
   obj/overkill-plugin-output.ali \
-  obj/overkill-interfaces.ali
+  obj/overkill-interfaces.ali    \
+  bmp/obj/*.ali
 
 W32OBJ=windows-obj/overkill-gui-w32.o \
   windows-obj/overkill-plugin-w32.o   \
@@ -68,7 +72,10 @@ resources/: $(RESOBJ)
 overkill.o: overkill.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
-bin/overkill.exe:
+bmp/bmp.a:
+	$(MAKE) -C bmp/
+
+bin/overkill.exe: bmp/bmp.a
 	mkdir -p bin
 	mkdir -p obj
 	mkdir -p windows-obj
@@ -77,7 +84,7 @@ bin/overkill.exe:
 	$(MAKE) windows/
 	$(MAKE) resources/
 	$(GNATBIND) $(ALI) $(W32ALI)
-	$(GNATLINK) $(GNATLINKFLAGS) -o $@ obj/overkill-main.ali
+	$(GNATLINK) $(GNATLINKFLAGS) -o $@ obj/overkill-main.ali bmp/bmp.a
 
 $(DOWNLOADS):
 	$(MAKE) -C downloads
@@ -97,6 +104,7 @@ clean:
 	rm -f windows-obj/*.o windows-obj/*.ali
 	rm -f *.exe *.o *.ali *.adb *.ads
 	rm -f bin/*.exe
+	$(MAKE) -C bmp clean
 	$(MAKE) -C downloads clean
 
 .PHONY: bin/overkill.exe clean test
