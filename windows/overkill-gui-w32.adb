@@ -22,9 +22,11 @@ package body Overkill.Gui.W32 is
    COLOR_BNTFACE : constant := 15;
    
    -- Load image
-   IMAGE_BITMAP : constant := 0;
-   IMAGE_CURSOR : constant := 2;
-   LR_LOADFROMFILE : constant := 16#10#;
+   IMAGE_BITMAP        : constant := 0;
+   IMAGE_ICON          : constant := 1;
+   IMAGE_CURSOR        : constant := 2;
+   LR_LOADFROMFILE     : constant := 16#10#;
+   LR_CREATEDIBSECTION : constant := 16#2000#;
    
    -- Window styles
    WS_MINIMIZEBOX : constant := 16#00020000#;
@@ -803,8 +805,13 @@ package body Overkill.Gui.W32 is
    function W32_Load_Image(filename : String) return Pixmap is
       bitmap : HANDLE;
       c_filename : Interfaces.C.char_array := Interfaces.C.To_C(filename);
+      Load_Image_Alpha : constant Boolean := True;
    begin
-      bitmap := LoadImageA(HINSTANCE(Null_Address), LPCSTR(c_filename'Address), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+      if Load_Image_Alpha then
+         bitmap := LoadImageA(HINSTANCE(Null_Address), LPCSTR(c_filename'Address), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE or LR_CREATEDIBSECTION);
+      else
+         bitmap := LoadImageA(HINSTANCE(Null_Address), LPCSTR(c_filename'Address), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+      end if;
       return HANDLE_To_Pixmap(bitmap);
    end W32_Load_Image;
    
