@@ -15,6 +15,7 @@ with Overkill.Platform;
 use Overkill.Platform;
 with Bmp;
 use Bmp;
+with System.Pool_Local;
 
 package body Overkill.Gui.W32 is
    
@@ -808,9 +809,30 @@ package body Overkill.Gui.W32 is
    --  Windows is very picky about which program created the image.
    --  So is Wine.
    function W32_Load_Image(filename : String) return Pixmap is
+
+      use BMP_Data_Vectors;
+
       bitmap : HANDLE;
       c_filename : Interfaces.C.char_array := Interfaces.C.To_C(filename);
       Use_Windows_Loader : constant Boolean := True;
+
+      function Create_Bitmap
+         (nWidth    : int;
+          nHeight   : int;
+          nPlanes   : UINT;
+          nBitCount : UINT;
+          lpBits    : System.Address)
+          return HANDLE;
+      pragma Import
+         (Convention => C,
+          Entity => Create_Bitmap,
+          External_Name => "CreateBitmap");
+
+      type Data_Array_Type is array (Natural range <>) of Unsigned_8;
+      type Data_Array_Access is access Data_Array_Type;
+      X : System.Pool_Local.Unbounded_Reclaim_Pool;
+      for Data_Array_Access'Storage_Pool use X;
+
    begin
       if Use_Windows_Loader then
          bitmap := LoadImageA
@@ -821,9 +843,18 @@ package body Overkill.Gui.W32 is
              LR_LOADFROMFILE);
       else
          declare
-            BMP: BMP_Type := Load_Image (filename);
+            File : BMP_Type := Load_Image (filename);
+            V    : BMP_Data := File.Get_Data;
+            Data : Data_Array_Access;
+            Size : constant Natural := Natural (V.Capacity);
          begin
-            null;
+            Data := new Data_Array_Type (0 .. Size);
+            for I in Data.all'First .. Data.all'Last loop
+               --  TODO: use a vector cursor to optimize it.
+               Data (I) := V.Element (I);
+            end loop;
+            bitmap := Create_Bitmap
+               (0, 0, 0, 0, Data.all'Address);
          end;
       end if;
       return HANDLE_To_Pixmap(bitmap);
