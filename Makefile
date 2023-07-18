@@ -68,7 +68,7 @@ resources/: $(RESOBJ)
 overkill.o: overkill.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
-bin/overkill.exe:
+bin/overkill.exe: $(OBJ) $(W32OBJ)
 	mkdir -p bin
 	mkdir -p obj
 	mkdir -p windows-obj
