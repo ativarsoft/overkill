@@ -68,7 +68,7 @@ resources/: $(RESOBJ)
 overkill.o: overkill.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
-bin/overkill.exe: $(OBJ) $(W32OBJ)
+bin/overkill.exe:
 	mkdir -p bin
 	mkdir -p obj
 	mkdir -p windows-obj
@@ -99,5 +99,5 @@ clean:
 	rm -f bin/*.exe
 	$(MAKE) -C downloads clean
 
-.PHONY: overkill.exe clean test
+.PHONY: bin/overkill.exe clean test
 
