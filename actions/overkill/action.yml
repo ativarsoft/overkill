@@ -2,6 +2,8 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
     - name: Enable 32-bit packages
       run: sudo ./enable_32bit.sh
       shell: bash
