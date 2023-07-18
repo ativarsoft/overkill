@@ -4,6 +4,7 @@ runs:
     - uses: actions/checkout@v3
     - name: Checkout submodules
       run: git submodule update --init --recursive
+      shell: bash
     - name: Enable 32-bit packages
       run: sudo ./enable_32bit.sh
       shell: bash
