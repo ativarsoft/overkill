@@ -55,12 +55,15 @@ DOWNLOADS=downloads/winamp200.exe
 all: bin/overkill.exe $(DOWNLOADS)
 
 obj/%.o: src/%.adb
+	mkdir -p obj
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
 windows-obj/%.o: windows/%.adb
+	mkdir -p windows-obj
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
 windows-obj/%.o: resources/%.rc
+	mkdir -p windows-obj
 	$(WINDRES) -i $< -o $@
 
 src/: $(OBJ)
