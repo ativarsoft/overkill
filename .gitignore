@@ -1,6 +1,7 @@
 downloads/*.exe
 downloads/*.zip
 downloads/cache/
+bin/skins/
 bin/plugins/
 bin/overkill.exe
 default-loc.xml
