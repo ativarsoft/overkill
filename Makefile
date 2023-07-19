@@ -75,7 +75,7 @@ overkill.o: overkill.adb
 bmp/bmp.a:
 	$(MAKE) -C bmp/
 
-bin/overkill.exe: bmp/bmp.a
+bin/overkill.exe: bmp/bmp.a $(OBJ) $(W32OBJ)
 	mkdir -p bin
 	mkdir -p obj
 	mkdir -p windows-obj
