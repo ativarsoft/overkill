@@ -105,10 +105,12 @@ clean:
 	rm -f *.exe *.o *.ali *.adb *.ads
 	rm -f bin/*.exe
 	$(MAKE) -C bmp clean
+
+clean-downloads:
 	$(MAKE) -C downloads clean
 
 run:
 	$(MAKE) -C bin run
 
-.PHONY: bin/overkill.exe clean test run
+.PHONY: clean test run
 

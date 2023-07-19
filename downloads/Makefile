@@ -17,11 +17,11 @@ cache2/: winamp5.51_classic_base_skin.zip
 	mkdir -p cache2
 	unzip -d cache2 winamp5.51_classic_base_skin.zip
 
-../bin/skins/classic/: winamp5.51_classic_base_skin.zip cache2/
+../bin/skins/classic/: cache2/
 	mkdir -p $@
 	mv cache2/* $@
 
-../bin/plugins/: winamp200.exe cache/
+../bin/plugins/: cache/
 	rm -fr $@
 	mv cache/PLUGINS/ $@
 
@@ -34,4 +34,6 @@ clean: clean-cache
 	rm -f *.zip *.exe *.zip.* *.exe.*
 
 .PHONY: clean clean-cache
+
+.SECONDARY: $(DOWNLOADS)
 
