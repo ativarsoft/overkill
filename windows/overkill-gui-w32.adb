@@ -16,6 +16,8 @@ use Overkill.Platform;
 with Bmp;
 use Bmp;
 with System.Pool_Local;
+with Ada.IO_Exceptions;
+with Ada.Text_IO;
 
 package body Overkill.Gui.W32 is
    
@@ -846,16 +848,22 @@ package body Overkill.Gui.W32 is
             File : BMP_Type := Load_Image (filename);
             V    : BMP_Data := File.Get_Data;
             Data : Data_Array_Access;
-            Size : constant Natural :=
-               File.Get_Width * File.Get_Height * (File.Get_Depth / 8);
+            Area : constant Natural :=
+               File.Get_Width * File.Get_Height;
          begin
-            if Size < Natural (V.Capacity) then
-               raise Program_Error with "Data vector capacity is not enough to hold calculated image size.";
+            --  Check if the size of the 32-bit image data buffer
+            --  is enough to 
+            if Area > Natural (V.Length) then
+               raise Program_Error with "Data vector length is not enough to hold calculated image size. " &
+                  "Vector data holds " & V.Length'Image & " pixels. " &
+                  "Image size is " & Area'Image & " pixels.";
             end if;
-            Data := new Data_Array_Type (0 .. Size);
-            for I in 1 .. Size loop
+
+            Data := new Data_Array_Type (0 .. Area);
+            for I in 0 .. Area - 1 loop
                --  TODO: use a vector cursor to optimize it.
-               Data (I) := V.Element (I);
+               --Data (I) := V.Element (V.First_Index + I);
+               null;
             end loop;
             bitmap := Create_Bitmap
                (int (File.Get_Width),
@@ -866,9 +874,12 @@ package body Overkill.Gui.W32 is
          end;
       end if;
       return HANDLE_To_Pixmap(bitmap);
-   --  exception
-   --     when others =>
-   --        return Pixmap (Null_Address);
+   exception
+      when Ada.IO_Exceptions.End_Error =>
+         Ada.Text_IO.Put_Line ("Premature end of file.");
+         return Pixmap (Null_Address);
+      --  when others =>
+      --     return Pixmap (Null_Address);
    end W32_Load_Image;
 
    procedure W32_Unload_Image(image : Pixmap) is
