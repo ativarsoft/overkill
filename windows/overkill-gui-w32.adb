@@ -860,11 +860,19 @@ package body Overkill.Gui.W32 is
             end if;
 
             Data := new Data_Array_Type (0 .. Area);
-            for I in 0 .. Area - 1 loop
-               --  TODO: use a vector cursor to optimize it.
-               --Data (I) := V.Element (V.First_Index + I);
-               null;
-            end loop;
+            if File.Is_Compressed then
+               for I in 0 .. File.Get_Height - 1 loop
+                  for J in 0 .. File.Get_Width - 1 loop
+                     Data (Data'Last - (I * File.Get_Width + (File.Get_Width - J))) := V.Element (V.First_Index + I * File.Get_Width + J);
+                  end loop;
+               end loop;
+            else
+               for I in 0 .. Area - 1 loop
+                  --  TODO: use a vector cursor to optimize it.
+                  Data (I) := V.Element (V.First_Index + I);
+                  null;
+               end loop;
+            end if;
             bitmap := Create_Bitmap
                (int (File.Get_Width),
                 int (File.Get_Height),
@@ -878,8 +886,8 @@ package body Overkill.Gui.W32 is
       when Ada.IO_Exceptions.End_Error =>
          Ada.Text_IO.Put_Line ("Premature end of file.");
          return Pixmap (Null_Address);
-      --  when others =>
-      --     return Pixmap (Null_Address);
+      when others =>
+         return Pixmap (Null_Address);
    end W32_Load_Image;
 
    procedure W32_Unload_Image(image : Pixmap) is
