@@ -814,7 +814,7 @@ package body Overkill.Gui.W32 is
 
       bitmap : HANDLE;
       c_filename : Interfaces.C.char_array := Interfaces.C.To_C(filename);
-      Use_Windows_Loader : constant Boolean := True;
+      Use_Windows_Loader : constant Boolean := False;
 
       function Create_Bitmap
          (nWidth    : int;
@@ -824,11 +824,11 @@ package body Overkill.Gui.W32 is
           lpBits    : System.Address)
           return HANDLE;
       pragma Import
-         (Convention => C,
+         (Convention => Stdcall,
           Entity => Create_Bitmap,
           External_Name => "CreateBitmap");
 
-      type Data_Array_Type is array (Natural range <>) of Unsigned_8;
+      type Data_Array_Type is array (Natural range <>) of Unsigned_32;
       type Data_Array_Access is access Data_Array_Type;
       X : System.Pool_Local.Unbounded_Reclaim_Pool;
       for Data_Array_Access'Storage_Pool use X;
@@ -846,20 +846,31 @@ package body Overkill.Gui.W32 is
             File : BMP_Type := Load_Image (filename);
             V    : BMP_Data := File.Get_Data;
             Data : Data_Array_Access;
-            Size : constant Natural := Natural (V.Capacity);
+            Size : constant Natural :=
+               File.Get_Width * File.Get_Height * (File.Get_Depth / 8);
          begin
+            if Size < Natural (V.Capacity) then
+               raise Program_Error with "Data vector capacity is not enough to hold calculated image size.";
+            end if;
             Data := new Data_Array_Type (0 .. Size);
-            for I in Data.all'First .. Data.all'Last loop
+            for I in 1 .. Size loop
                --  TODO: use a vector cursor to optimize it.
                Data (I) := V.Element (I);
             end loop;
             bitmap := Create_Bitmap
-               (0, 0, 0, 0, Data.all'Address);
+               (int (File.Get_Width),
+                int (File.Get_Height),
+                UINT (File.Get_Plane_Count),
+                32,
+                Data.all'Address);
          end;
       end if;
       return HANDLE_To_Pixmap(bitmap);
+   --  exception
+   --     when others =>
+   --        return Pixmap (Null_Address);
    end W32_Load_Image;
-   
+
    procedure W32_Unload_Image(image : Pixmap) is
    begin
       null;

@@ -1,7 +1,7 @@
 DOWNLOADS=winamp200.exe \
   winamp5.51_classic_base_skin.zip
 
-all: clean-cache ../bin/skins/ ../bin/plugins/
+all: clean-cache ../bin/skins/classic/ ../bin/plugins/
 
 winamp200.exe:
 	wget "https://ativarsoft.helioho.st/winamp200.exe"
@@ -17,7 +17,7 @@ cache2/: winamp5.51_classic_base_skin.zip
 	mkdir -p cache2
 	unzip -d cache2 winamp5.51_classic_base_skin.zip
 
-../bin/skins/: winamp5.51_classic_base_skin.zip cache2/
+../bin/skins/classic/: winamp5.51_classic_base_skin.zip cache2/
 	mkdir -p $@
 	mv cache2/* $@
 

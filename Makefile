@@ -107,5 +107,8 @@ clean:
 	$(MAKE) -C bmp clean
 	$(MAKE) -C downloads clean
 
-.PHONY: bin/overkill.exe clean test
+run:
+	$(MAKE) -C bin run
+
+.PHONY: bin/overkill.exe clean test run
 
