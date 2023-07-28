@@ -12,8 +12,8 @@ use Overkill.Plugin.Output;
 with System;
 
 package body Overkill.Plugin.W32 is
-   
-   type Get_In_Module_Type is access function return access In_Plugin_Type;
+
+   type Get_In_Module_Type is access function return In_Plugin_Access;
    type Get_Out_Module_Type is access function return Out_Plugin_Type;
    
    type DWORD is new Interfaces.C.unsigned;
@@ -167,12 +167,12 @@ package body Overkill.Plugin.W32 is
       null;
    end Set_Info;
 
-   procedure Load_Input_Plugin
-     (Plugin_Manager : W32_Plugin_Manager_Type;
+   overriding procedure Load_Input_Plugin
+     (Plugin_Manager : in out W32_Plugin_Manager_Type;
       Library : Library_Type)
    is
       Get_In_Module : Get_In_Module_Type;
-      In_Module : access In_Plugin_Type;
+      In_Module : In_Plugin_Access;
    begin
       Get_In_Module := Get_In_Symbol (Library, "winampGetInModule2");
       if Get_In_Module = null then
@@ -198,13 +198,14 @@ package body Overkill.Plugin.W32 is
       Put_Line ("Description: " & To_Ada (Value (In_Module.Description)));
       Put_Line ("Calling about function.");
       In_Module.About.all (main_window);
+      Plugin_Manager.V.Append (In_Module);
    exception
       when E : others =>
          Put_Line (Ada.Exceptions.Exception_Information (E));
    end Load_Input_Plugin;
    
    procedure Load_Output_Plugin
-     (Plugin_Manager : W32_Plugin_Manager_Type;
+     (Plugin_Manager : in out W32_Plugin_Manager_Type;
       Library : Library_Type)
    is
       Out_Module : Out_Plugin_Type;
@@ -227,7 +228,7 @@ package body Overkill.Plugin.W32 is
    end Load_Output_Plugin;
    
    procedure Load_General_Plugin
-     (Plugin_Manager : W32_Plugin_Manager_Type;
+     (Plugin_Manager : in out W32_Plugin_Manager_Type;
       Library : Library_Type)
    is
    begin
@@ -235,7 +236,7 @@ package body Overkill.Plugin.W32 is
    end Load_General_Plugin;
    
    procedure Load_DSP_Plugin
-     (Plugin_Manager : W32_Plugin_Manager_Type;
+     (Plugin_Manager : in out W32_Plugin_Manager_Type;
       Library : Library_Type)
    is
    begin
@@ -243,7 +244,7 @@ package body Overkill.Plugin.W32 is
    end Load_DSP_Plugin;
    
    procedure Load_Visualization_Plugin
-     (Plugin_Manager : W32_Plugin_Manager_Type;
+     (Plugin_Manager : in out W32_Plugin_Manager_Type;
       Library : Library_Type)
    is
    begin
@@ -251,11 +252,31 @@ package body Overkill.Plugin.W32 is
    end Load_Visualization_Plugin;
    
    procedure Load_Encoder_Plugin
-     (Plugin_Manager : W32_Plugin_Manager_Type;
+     (Plugin_Manager : in out W32_Plugin_Manager_Type;
       Library : Library_Type)
    is
    begin
       null;
    end Load_Encoder_Plugin;
+
+   function Lookup_In_Plugin
+      (Plugin_Manager : in out W32_Plugin_Manager_Type;
+       Filename : String)
+       return In_Plugin_Access
+   is
+      use In_Plugin_Vectors;
+
+      C_Filename : chars_ptr;
+   begin
+      for I in 1 .. Plugin_Manager.V.Length loop
+         C_Filename := New_String (Filename);
+         if Plugin_Manager.V (I).Is_Our_File (C_Filename) /= 0 then
+            Free (C_Filename);
+            return Plugin_Manager.V (I);
+         end if;
+         Free (C_Filename);
+      end loop;
+      raise Program_Error with "Unknown file format.";
+   end Lookup_In_Plugin;
 
 end Overkill.Plugin.W32;

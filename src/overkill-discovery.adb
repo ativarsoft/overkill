@@ -28,7 +28,7 @@ package body Overkill.Discovery is
    -- Types
    --
    
-   type In_Plugin_Type is null record;
+   --  type In_Plugin_Type is null record;
    type Out_Plugin_Type is null record;
    type Gen_Plugin_Type is null record;
    type DSP_Plugin_Module_Type is null record;
@@ -91,7 +91,7 @@ package body Overkill.Discovery is
       if Equal_Case_Insensitive (Filename (Filename'First..Filename'First+2), "in_") then
          Put_Line ("Loading in plugin.");
          Library := Load_Library (Path);
-         Load_Input_Plugin (Plugin_Manager, Library);
+         Plugin_Manager.Load_Input_Plugin (Library);
       elsif Equal_Case_Insensitive (Filename (Filename'First..Filename'First+4), "out_") then
          Library := Load_Library (Path);
          Load_Output_Plugin (Plugin_Manager, Library);
@@ -134,16 +134,20 @@ package body Overkill.Discovery is
       End_Search (Search);
    end Traverse_Dir;
    
-   procedure New_Discovery
-     (Discovery : in out Discovery_Type)
+   function New_Discovery
+     return Discovery_Type
    is
       use Ada.Command_Line;
+
       Plugin_Dir : String := Compose
         (Containing_Directory => Containing_Directory (Command_Name),
          Name => "plugins",
          Extension => "");
+
+      Discovery : Discovery_Type;
    begin
       Traverse_Dir (Plugin_Dir);
+      return Discovery;
    end New_Discovery;
    
    procedure Finalize
@@ -152,5 +156,14 @@ package body Overkill.Discovery is
    begin
       null;
    end Finalize;
+
+   function Lookup_In_Plugin
+      (Discovery : in out Discovery_Type;
+       Filename  : String)
+       return In_Plugin_Access
+   is
+   begin
+      return Plugin_Manager.Lookup_In_Plugin (Filename);
+   end Lookup_In_Plugin;
 
 end Overkill.Discovery;

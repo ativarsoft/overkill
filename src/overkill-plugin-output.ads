@@ -4,8 +4,8 @@ with Interfaces.C.Strings;
 use Interfaces.C.Strings;
 with Overkill.Platform;
 use Overkill.Platform;
-with Overkill.Plugin.Input;
-use Overkill.Plugin.Input;
+with Overkill.Plugin.Common;
+use Overkill.Plugin.Common;
 
 package Overkill.Plugin.Output is
 

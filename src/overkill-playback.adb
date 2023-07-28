@@ -2,6 +2,9 @@ with Ada.Containers.Vectors;
 with Ada.Strings.Unbounded;
 use Ada.Strings.Unbounded;
 with Overkill.Plugin.Input;
+use Overkill.Plugin.Input;
+with Overkill.Discovery;
+use Overkill.Discovery;
 
 package body Overkill.Playback is
 
@@ -62,5 +65,27 @@ package body Overkill.Playback is
       end if;
       Play;
    end Next;
+
+   function Lookup_In_Plugin
+      (Filename : String;
+       Discovery : Discovery_Access)
+       return In_Plugin_Access
+   is
+   begin
+      return Discovery.Lookup_In_Plugin (Filename);
+   end Lookup_In_Plugin;
+
+   function New_Playback
+      (Filename : String;
+       Discovery : Discovery_Type)
+       return Playback_Type
+   is
+      --  In_Plugin : In_Plugin_Type := Lookup_In_Plugin (Discovery, Filename);
+      In_Plugin : In_Plugin_Type;
+      Playback : constant Playback_Type :=
+         (In_Plugin => In_Plugin);
+   begin
+      return Playback;
+   end New_Playback;
 
 end Overkill.Playback;

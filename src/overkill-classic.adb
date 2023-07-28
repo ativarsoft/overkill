@@ -5,6 +5,8 @@ use Overkill.Debug;
 with Overkill.Playback;
 with Overkill.Platform;
 use Overkill.Platform;
+with Overkill.Discovery;
+use Overkill.Discovery;
 with System;
 use System;
 
@@ -2076,10 +2078,12 @@ is
    end Finalize;
 
    procedure Run
-     (Skin : in out Skin_Type)
+     (Skin : in out Skin_Type;
+      Discovery : Discovery_Access)
    is
    begin
       Put_Line ("Entering event loop.");
+      Skin.Discovery := Discovery;
       Skin.Gui.event_handler.all;
       Put_Line ("Leaving event loop.");
    end Run;

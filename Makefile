@@ -21,7 +21,9 @@ OBJ=obj/overkill-main.o         \
   obj/overkill-plugin.o         \
   obj/overkill-plugin-input.o   \
   obj/overkill-plugin-output.o  \
+  obj/overkill-plugin-common.o  \
   obj/overkill-interfaces.o     \
+  obj/overkill-subsystems.o     \
   bmp/bmp.a
 
 ALI=obj/overkill-main.ali        \
@@ -35,7 +37,9 @@ ALI=obj/overkill-main.ali        \
   obj/overkill-plugin.ali        \
   obj/overkill-plugin-input.ali  \
   obj/overkill-plugin-output.ali \
+  obj/overkill-plugin-common.ali \
   obj/overkill-interfaces.ali    \
+  obj/overkill-subsystems.ali    \
   bmp/obj/*.ali
 
 W32OBJ=windows-obj/overkill-gui-w32.o \

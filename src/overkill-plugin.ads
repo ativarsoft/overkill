@@ -14,32 +14,32 @@ package Overkill.Plugin is
    type Plugin_Manager_Type is interface;
 
    procedure Load_Input_Plugin
-     (Plugin_Manager : Plugin_Manager_Type;
+     (Plugin_Manager : in out Plugin_Manager_Type;
       Library : Library_Type)
    is abstract;
-   
+
    procedure Load_Output_Plugin
-     (Plugin_Manager : Plugin_Manager_Type;
+     (Plugin_Manager : in out Plugin_Manager_Type;
       Library : Library_Type)
    is abstract;
    
    procedure Load_General_Plugin
-     (Plugin_Manager : Plugin_Manager_Type;
+     (Plugin_Manager : in out Plugin_Manager_Type;
       Library : Library_Type)
    is abstract;
    
    procedure Load_DSP_Plugin
-     (Plugin_Manager : Plugin_Manager_Type;
+     (Plugin_Manager : in out Plugin_Manager_Type;
       Library : Library_Type)
    is abstract;
    
    procedure Load_Visualization_Plugin
-     (Plugin_Manager : Plugin_Manager_Type;
+     (Plugin_Manager : in out Plugin_Manager_Type;
       Library : Library_Type)
    is abstract;
    
    procedure Load_Encoder_Plugin
-     (Plugin_Manager : Plugin_Manager_Type;
+     (Plugin_Manager : in out Plugin_Manager_Type;
       Library : Library_Type)
    is abstract;
 

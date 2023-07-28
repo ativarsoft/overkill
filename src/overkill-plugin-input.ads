@@ -1,3 +1,12 @@
+with Overkill.Plugin;
+use Overkill.Plugin;
+with Overkill.Plugin.Common;
+with Overkill.Plugin.Output;
+with Interfaces.C;
+use Interfaces.C;
+with Interfaces.C.Strings;
+use Interfaces.C.Strings;
+
 package Overkill.Plugin.Input is
 
    pragma Elaborate_Body;
@@ -8,7 +17,7 @@ package Overkill.Plugin.Input is
    type Quit_Type is access procedure;
    type Get_File_Info_Type is access procedure;
    type Info_Box_Type is access procedure;
-   type Is_Our_File_Type is access procedure;
+   type Is_Our_File_Type is access function (Filename : chars_ptr) return int;
    type Play_Type is access procedure;
    type Pause_Type is access procedure;
    type Unpause_Type is access procedure;
@@ -60,7 +69,7 @@ package Overkill.Plugin.Input is
       Set_Output_Time : Set_Output_Time_Type;
       Set_Volume : Set_Volume_Type;
       Set_Panning : Set_Panning_Type;
-      -- Video Spectrum analyser
+      --  Video Spectrum analyser
       Sa_Vsa_Init : Sa_Vsa_Init_Type;
       Sa_Vsa_Deinit : Sa_Vsa_Deinit_Type;
       Sa_Add_Pcm_Data : Sa_Add_Pcm_Data_Type;
@@ -72,11 +81,14 @@ package Overkill.Plugin.Input is
       Vsa_Set_Info : Vsa_Set_Info_Type;
       Dsp_Is_Active : Dsp_Is_Active_Type;
       Do_Samples : Do_Samples_Type;
-      -- Equalizer
+      --  Equalizer
       Eq_Set : Eq_Set_Type;
       Set_Info : Set_Info_Type;
-      --Out_Plugin;
+      --  Output plugin module
+      Out_Plugin : Overkill.Plugin.Output.Out_Plugin_Type;
    end record;
+
+   type In_Plugin_Access is access all In_Plugin_Type;
 
 end Overkill.Plugin.Input;
 

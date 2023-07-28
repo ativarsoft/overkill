@@ -1,6 +1,8 @@
 with Interfaces.C.Pointers;
 with Overkill.Platform;
 use Overkill.Platform;
+with Overkill.Discovery;
+use Overkill.Discovery;
 with System;
 
 package Overkill.Gui is
@@ -295,6 +297,7 @@ package Overkill.Gui is
    type Skin_Type (T : Skin) is record
       GUI : Gui_Dispatch;
       --main_window : Window_Type;
+      Discovery : Discovery_Access;
       
       case T is
          when Classic_Skin =>
