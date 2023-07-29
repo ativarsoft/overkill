@@ -467,19 +467,6 @@ is
    -- Event handlers
    --
 
-   --  procedure Draw_Time
-   --    (minutes, seconds : Integer;
-   --     remaining_time : Boolean)
-   --  is
-   --     bmp : Pixmap;
-   --  begin
-   --     bmp := bmps(Bitmap'Pos(BMP_NUMS_EX));
-   --     Skin.Gui.draw_image(bmp, 48, 26, 9, 13, 9 * (minutes / 10), 0);
-   --     Skin.Gui.draw_image(bmp, 60, 26, 9, 13, 9 * (minutes mod 10), 0);
-   --     Skin.Gui.draw_image(bmp, 78, 26, 9, 13, 9 * (seconds / 10), 0);
-   --     Skin.Gui.draw_image(bmp, 90, 26, 9, 13, 9 * (seconds mod 10), 0);
-   --  end Draw_Time;
-
    procedure Capture_Mouse(Skin : in out Skin_Type; ID : Window_ID; wid : Natural) is
    begin
       Skin.Gui.capture_mouse(Skin.Windows (ID));
@@ -564,6 +551,30 @@ is
    begin
       Skin.Gui.Draw_Text (x, y, w, h, Text);
    end Draw_Text;
+
+   procedure Draw_Time
+      (Skin : in out Skin_Type)
+   is
+
+      use Overkill.Playback;
+
+      bmp : Pixmap := Skin.bmps (BMP_NUMS_EX);
+
+      Minutes : Natural := Get_Minutes;
+      Seconds : Natural := Get_Seconds;
+
+   begin
+      if bmp = Pixmap (Null_Address) then
+         raise Program_Error with "Invalid NUMS_EX bmp.";
+      end if;
+
+      Put_Line ("Drawing time.");
+
+      Skin.Gui.draw_image(bmp, 48, 26, 9, 13, 9 * (Minutes / 10), 0);
+      Skin.Gui.draw_image(bmp, 60, 26, 9, 13, 9 * (Minutes mod 10), 0);
+      Skin.Gui.draw_image(bmp, 78, 26, 9, 13, 9 * (Seconds / 10), 0);
+      Skin.Gui.draw_image(bmp, 90, 26, 9, 13, 9 * (Seconds mod 10), 0);
+   end Draw_Time;
 
    procedure Background_Mouse_Down
      (Skin : in out Skin_Type;
@@ -1364,6 +1375,9 @@ is
       for I in Skin.Templates (ID)'Range loop
          control (Skin.Templates (ID) (I).T).draw(Skin, ID, I);
       end loop;
+      if ID = MAIN_WINDOW_ID then
+         Draw_Time (Skin);
+      end if;
       Skin.Gui.end_drawing.all;
    end Template_Draw;
 

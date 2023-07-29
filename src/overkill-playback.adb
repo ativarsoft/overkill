@@ -50,6 +50,7 @@ package body Overkill.Playback is
    
    type Playback_Type is record
       In_Plugin : Overkill.Plugin.Input.In_Plugin_Access;
+      Minutes, Seconds : Natural;
    end record;
 
    Playlist : Playlist_Type;
@@ -154,7 +155,9 @@ package body Overkill.Playback is
    is
       In_Plugin : In_Plugin_Access := null;
       Playback : constant Playback_Type :=
-         (In_Plugin => In_Plugin);
+         (In_Plugin => In_Plugin,
+          Minutes   => 0,
+          Seconds   => 0);
    begin
       return Playback;
    end New_Playback;
@@ -189,5 +192,26 @@ package body Overkill.Playback is
       Playback := New_Playback;
       Playlist := New_Playlist;
    end Initialize;
+
+   function Get_Minutes
+      return Natural
+   is
+   begin
+      return Playback.Minutes;
+   end Get_Minutes;
+
+   function Get_Seconds
+      return Natural
+   is
+   begin
+      return Playback.Seconds;
+   end Get_Seconds;
+
+   function Is_Playing
+      return Boolean
+   is
+   begin
+      return True;
+   end Is_Playing;
 
 end Overkill.Playback;
