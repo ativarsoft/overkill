@@ -93,7 +93,7 @@ adabmp/libadabmp.a:
 adadft/libadadft.a:
 	$(MAKE) -C adadft/
 
-bin/overkill.exe: adabmp/libadabmp.a $(OBJ) $(W32OBJ)
+bin/overkill.exe: adabmp/libadabmp.a adabmp/src/*.ad[s,b] adadft/libadadft.a adadft/src/*.ad[s,b] $(OBJ) $(W32OBJ)
 	mkdir -p bin
 	mkdir -p obj
 	mkdir -p windows-obj
