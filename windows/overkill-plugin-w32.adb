@@ -104,7 +104,7 @@ package body Overkill.Plugin.W32 is
    end Sa_Vsa_Deinit;
    
    procedure Sa_Add_Pcm_Data
-     (pcm_data : Pcm_Data_Type;
+     (pcm_data : System.Address;
       Num_Channels : int;
       Bps : int;
       Time : int);
@@ -114,7 +114,7 @@ package body Overkill.Plugin.W32 is
        Entity => Sa_Add_Pcm_Data);
 
    procedure Sa_Add_Pcm_Data
-     (pcm_data : Pcm_Data_Type;
+     (pcm_data : System.Address;
       Num_Channels : int;
       Bps : int;
       Time : int)
@@ -138,7 +138,7 @@ package body Overkill.Plugin.W32 is
    end Sa_Get_Mode;
    
    function Sa_Add
-     (data : Pcm_Data_Type;
+     (data : System.Address;
       Time : int;
       T : int)
       return int;
@@ -148,7 +148,7 @@ package body Overkill.Plugin.W32 is
        Entity => Sa_Add);
 
    function Sa_Add
-     (data : Pcm_Data_Type;
+     (data : System.Address;
       Time : int;
       T : int)
       return int
@@ -158,7 +158,7 @@ package body Overkill.Plugin.W32 is
    end Sa_Add;
 
    procedure Vsa_Add_Pcm_Data
-     (A : access Null_Record;
+     (A : System.Address;
       B : int;
       C : int;
       D : int);
@@ -168,7 +168,7 @@ package body Overkill.Plugin.W32 is
        Entity => Vsa_Add_Pcm_Data);
 
    procedure Vsa_Add_Pcm_Data
-     (A : access Null_Record;
+     (A : System.Address;
       B : int;
       C : int;
       D : int)
@@ -195,22 +195,20 @@ package body Overkill.Plugin.W32 is
       return 0;
    end Vsa_Get_Mode;
 
-   function Vsa_Add
-     (A : access Null_Record;
-      B : int)
-      return int;
+   procedure Vsa_Add
+     (A : System.Address;
+      B : int);
 
    pragma Convention
       (Convention => Stdcall,
        Entity => Vsa_Add);
 
-   function Vsa_Add
-     (A : access Null_Record;
+   procedure Vsa_Add
+     (A : System.Address;
       B : int)
-      return int
    is
    begin
-      return 0;
+      null;
    end Vsa_Add;
    
    procedure Vsa_Set_Info
@@ -377,11 +375,25 @@ package body Overkill.Plugin.W32 is
       null;
    end Load_Encoder_Plugin;
 
-   function Lookup_In_Plugin
-      (Plugin_Manager : in out W32_Plugin_Manager_Type;
-       Filename : String)
+   function Try_To_Open
+      (Filename : String)
+       return Boolean
+   is
+      use Ada.Directories;
+   begin
+      return Exists (Filename);
+   exception
+      when others =>
+         return False;
+   end Try_To_Open;
+
+   function Lookup_In_Plugin_For_Local_File
+      (Plugin : In_Plugin_Access;
+       Filename : String;
+       C_Filename : chars_ptr)
        return In_Plugin_Access
    is
+
       use Ada.Characters.Handling;
       use Ada.Directories;
       use Ada.Text_IO;
@@ -389,7 +401,7 @@ package body Overkill.Plugin.W32 is
 
       Filename_Extension : String := Extension (To_Lower (Filename));
 
-      C_Filename, C_Filename_Extension : chars_ptr;
+      C_Filename_Extension : chars_ptr;
 
       function Check_Extension (Extensions : chars_ptr; Filename_Extension : chars_ptr)
          return int;
@@ -397,6 +409,29 @@ package body Overkill.Plugin.W32 is
          (Convention => C,
           Entity => Check_Extension,
           External_Name => "check_extension");
+
+   begin
+      C_Filename_Extension := New_String (Filename_Extension);
+      if Check_Extension
+         (Plugin.File_Ext, C_Filename_Extension) = 0
+      then
+         Free (C_Filename_Extension);
+         return Plugin;
+      end if;
+      Free (C_Filename_Extension);
+      return null;
+   end Lookup_In_Plugin_For_Local_File;
+
+   function Lookup_In_Plugin
+      (Plugin_Manager : in out W32_Plugin_Manager_Type;
+       Filename : String)
+       return In_Plugin_Access
+   is
+      use Ada.Text_IO;
+
+      C_Filename : chars_ptr;
+      File_Exists : Boolean := Try_To_Open (Filename);
+      R : In_Plugin_Access;
    begin
       Put ("Trying to play ");
       Put (Filename);
@@ -419,17 +454,14 @@ package body Overkill.Plugin.W32 is
             return Plugin_Manager.V (I);
          end if;
 
-         C_Filename_Extension := New_String (Filename_Extension);
-         if Check_Extension
-            (Plugin_Manager.V (I).File_Ext, C_Filename_Extension) = 0
-         then
+         if File_Exists then
+            R := Lookup_In_Plugin_For_Local_File
+               (Plugin_Manager.V (I), Filename, C_Filename);
             Free (C_Filename);
-            Free (C_Filename_Extension);
-            return Plugin_Manager.V (I);
+            if R /= null then
+               return R;
+            end if;
          end if;
-
-         Free (C_Filename);
-         Free (C_Filename_Extension);
       end loop;
       raise Program_Error with "Unknown file format.";
    end Lookup_In_Plugin;

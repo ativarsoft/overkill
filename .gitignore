@@ -7,4 +7,5 @@ bin/overkill.exe
 default-loc.xml
 obj/
 windows-obj/
+*winetricks*
 

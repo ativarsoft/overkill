@@ -6,6 +6,7 @@ use Ada.Strings.Unbounded;
 with Ada.IO_Exceptions;
 with Ada.Text_IO;
 with Ada.Streams.Stream_IO;
+with Ada.Directories;
 with Interfaces.C;
 use Interfaces.C;
 with Interfaces.C.Strings;
@@ -17,6 +18,8 @@ use Overkill.Plugin.Output;
 with Overkill.Discovery;
 use Overkill.Discovery;
 with Overkill.Subsystems;
+with Overkill.Debug;
+use Overkill.Debug;
 with System;
 use System;
 
@@ -25,7 +28,8 @@ package body Overkill.Playback is
    Empty_Playlist     : exception;
    Invalid_Out_Module : exception;
 
-   Default_Path : constant String := "mateus016-11-2-finished.mp3";
+   --Default_Path : constant String := "mateus016-11-2-finished.mp3";
+   Default_Path : constant String := "tone://800";
    Default_Title : constant String := "Mental Asylum";
    Default_Artist : constant String := "Mateus";
 
@@ -76,28 +80,23 @@ package body Overkill.Playback is
       (Filename : String)
        return Boolean
    is
-      use Ada.Streams.Stream_IO;
-
-      File : File_Type;
+      use Ada.Directories;
    begin
-      Open (File, In_File, Filename);
-      Close (File);
-      return True;
+      return Exists (Filename);
    exception
-      when Ada.IO_Exceptions.Status_Error =>
+      when others =>
          return False;
    end Try_To_Open;
-   
+
    procedure Play
    is
-      use Ada.Text_IO;
-
       Current_Entry : Playlist_Entry_Type := Playlist.Get_Current_Entry;
       Filename : String := To_String (Current_Entry.Path);
+      File_Exists : Boolean := Try_To_Open (Filename);
       C_Filename : chars_ptr;
       R : int;
    begin
-      if Try_To_Open (Filename) = False then
+      if File_Exists then
          Put_Line ("File not found.");
          return;
       else
@@ -111,7 +110,7 @@ package body Overkill.Playback is
       Playback.In_Plugin.Out_Module := Out_Module;
       C_Filename := New_String (Filename);
       R := Playback.In_Plugin.Play (C_Filename);
-      Free (C_Filename);
+      --  Free (C_Filename);
       if R /= 0 then
          raise Program_Error with "Playback failed.";
       end if;

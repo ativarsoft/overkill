@@ -128,5 +128,11 @@ run:
 gdb:
 	$(MAKE) -C bin gdb
 
-.PHONY: clean test run
+winedbg:
+	$(MAKE) -C bin winedbg
+
+install:
+	$(MAKE) -C downloads install
+
+.PHONY: clean test run install dgb winedbg
 

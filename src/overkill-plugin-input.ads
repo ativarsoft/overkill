@@ -12,24 +12,45 @@ package Overkill.Plugin.Input is
 
    pragma Elaborate_Body;
 
-   type Configure_Type is access procedure;
-   type About_Type is access procedure (hwndParent : Window_Type);
+   type Configure_Type is access procedure (Parent : Window_Type);
+   pragma Convention (Stdcall, Configure_Type);
+   type About_Type is access procedure (Parent : Window_Type);
+   pragma Convention (Stdcall, About_Type);
    type Init_Type is access procedure;
+   pragma Convention (Stdcall, Init_Type);
    type Quit_Type is access procedure;
-   type Get_File_Info_Type is access procedure;
-   type Info_Box_Type is access procedure;
+   pragma Convention (Stdcall, Quit_Type);
+   type Get_File_Info_Type is access procedure (File : chars_ptr; Title : chars_ptr; Length_In_Ms : System.Address);
+   pragma Convention (Stdcall, Get_File_Info_Type);
+   type Info_Box_Type is access procedure (File : chars_ptr; Parent : Window_Type);
+   pragma Convention (Stdcall, Info_Box_Type);
    type Is_Our_File_Type is access function (Filename : chars_ptr) return int;
+   pragma Convention (Stdcall, Is_Our_File_Type);
    type Play_Type is access function (Filename : chars_ptr) return int;
+   pragma Convention (Stdcall, Play_Type);
    type Pause_Type is access procedure;
+   pragma Convention (Stdcall, Pause_Type);
    type Unpause_Type is access procedure;
+   pragma Convention (Stdcall, Unpause_Type);
    type Is_Paused_Type is access procedure;
+   pragma Convention (Stdcall, Is_Paused_Type);
    type Stop_Type is access procedure;
+   pragma Convention (Stdcall, Stop_Type);
    type Get_Length_Type is access procedure;
+   pragma Convention (Stdcall, Get_Length_Type);
    type Get_Output_Time_Type is access procedure;
-   type Set_Output_Time_Type is access procedure;
-   type Set_Volume_Type is access procedure;
-   type Set_Panning_Type is access procedure;
+   pragma Convention (Stdcall, Get_Output_Time_Type);
+   type Set_Output_Time_Type is access procedure (Miliseconds : int);
+   pragma Convention (Stdcall, Set_Output_Time_Type);
+   type Set_Volume_Type is access procedure (Value : int);
+   pragma Convention (Stdcall, Set_Volume_Type);
+   type Set_Panning_Type is access procedure (Value : int);
+   pragma Convention (Stdcall, Set_Panning_Type);
+
+   --
    -- Video Spectrum analyser
+   --
+
    type Sa_Vsa_Init_Type is access procedure (latency : int; rate : int);
 
    pragma Convention
@@ -42,7 +63,7 @@ package Overkill.Plugin.Input is
       (Convention => Stdcall,
        Entity => Sa_Vsa_Deinit_Type);
 
-   type Sa_Add_Pcm_Data_Type is access procedure (pcm_data : Pcm_Data_Type; Num_Channels : int; Bps : int; Time : int);
+   type Sa_Add_Pcm_Data_Type is access procedure (pcm_data : System.Address; Num_Channels : int; Bps : int; Time : int);
 
    pragma Convention
       (Convention => Stdcall,
@@ -54,13 +75,13 @@ package Overkill.Plugin.Input is
       (Convention => Stdcall,
        Entity => Sa_Get_Mode_Type);
 
-   type Sa_Add_Type is access function (data : Pcm_Data_Type; Time : int; T : int) return int;
+   type Sa_Add_Type is access function (data : System.Address; Time : int; T : int) return int;
 
    pragma Convention
       (Convention => Stdcall,
        Entity => Sa_Add_Type);
 
-   type Vsa_Add_Pcm_Data_Type is access procedure (A : access Null_Record; B : int; C : int; D : int);
+   type Vsa_Add_Pcm_Data_Type is access procedure (A : System.Address; B : int; C : int; D : int);
 
    pragma Convention
       (Convention => Stdcall,
@@ -72,7 +93,7 @@ package Overkill.Plugin.Input is
       (Convention => Stdcall,
        Entity => Vsa_Get_Mode_Type);
 
-   type Vsa_Add_Type is access function (A : access Null_Record; B : int) return int;
+   type Vsa_Add_Type is access procedure (A : System.Address; B : int);
 
    pragma Convention
       (Convention => Stdcall,
@@ -99,7 +120,9 @@ package Overkill.Plugin.Input is
    --
    -- Equalizer
    --
-   type Eq_Set_Type is access procedure (A : int; B : access String; C : int);
+
+   type Eq_Arr is new String (1 .. 10);
+   type Eq_Set_Type is access procedure (A : int; B : System.Address; C : int);
 
    pragma Convention
       (Convention => Stdcall,

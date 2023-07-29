@@ -27,12 +27,17 @@ package Overkill.Plugin.Output is
    type Pause_Type is access function (pause : int) return int;
 
    type Set_Volume_Type is access procedure (volume : int);
+   pragma Convention (Stdcall, Set_Volume_Type);
    type Set_Panning_Type is access procedure (pan : int);
+   pragma Convention (Stdcall, Set_Panning_Type);
 
    type Flush_Type is access procedure (time : int);
+   pragma Convention (Stdcall, Flush_Type);
 
    type Get_Output_Time_Type is access function return int;
+   pragma Convention (Stdcall, Get_Output_Time_Type);
    type Get_Written_Time_Type is access function return int;
+   pragma Convention (Stdcall, Get_Written_Time_Type);
 
    type Out_Plugin_Type is record
       Version : int;

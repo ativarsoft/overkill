@@ -1,13 +1,24 @@
-DOWNLOADS=winamp200.exe \
-  winamp5.51_classic_base_skin.zip
+WINETRICKS=winetricks \
+  winetricks.bash-completion
 
-all: clean-cache ../bin/skins/classic/ ../bin/plugins/
+DOWNLOADS=winamp200.exe \
+  winamp5.51_classic_base_skin.zip \
+  $(WINETRICKS)
+
+all: clean-cache ../bin/skins/classic/ ../bin/plugins/ $(WINETRICKS)
 
 winamp200.exe:
 	wget "https://ativarsoft.helioho.st/winamp200.exe"
 
 winamp5.51_classic_base_skin.zip:
 	wget "https://ativarsoft.helioho.st/winamp5.51_classic_base_skin.zip"
+
+winetricks:
+	wget "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks"
+	chmod +x winetricks
+
+winetricks.bash-completion:
+	wget "https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks.bash-completion"
 
 cache/: winamp200.exe
 	mkdir -p cache
@@ -33,7 +44,11 @@ clean: clean-cache
 	rm -f $(DOWNLOADS)
 	rm -f *.zip *.exe *.zip.* *.exe.*
 
-.PHONY: clean clean-cache
+install:
+	cp winetricks /usr/local/bin
+	cp winetricks.bash-completion /usr/share/bash-completion/completions/winetricks
+
+.PHONY: clean clean-cache install
 
 .SECONDARY: $(DOWNLOADS)
 
