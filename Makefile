@@ -3,7 +3,7 @@
 MAKE=make -j1
 CC=i686-w64-mingw32-gcc
 GNAT=i686-w64-mingw32-gcc
-GNATFLAGS=-Isrc -Iwindows -Iresources -Ibmp/src
+GNATFLAGS=-Isrc -Iwindows -Iresources -Iadabmp/src -Iadadft/src
 GNATBIND=i686-w64-mingw32-gnatbind
 GNATLINK=i686-w64-mingw32-gnatlink
 GNATLINKFLAGS=-lgdi32 -lcomdlg32 windows-obj/resources.o #-mwindows
@@ -26,7 +26,8 @@ OBJ=obj/overkill-main.o         \
   obj/overkill-interfaces.o     \
   obj/overkill-subsystems.o     \
   obj/check_extension.o         \
-  bmp/bmp.a
+  adabmp/libadabmp.a            \
+  adadft/libadadft.a
 
 ALI=obj/overkill-main.ali        \
   obj/overkill.ali               \
@@ -42,7 +43,8 @@ ALI=obj/overkill-main.ali        \
   obj/overkill-plugin-common.ali \
   obj/overkill-interfaces.ali    \
   obj/overkill-subsystems.ali    \
-  bmp/obj/*.ali
+  adabmp/obj/*.ali               \
+  adadft/obj/*.ali
 
 W32OBJ=windows-obj/overkill-gui-w32.o \
   windows-obj/overkill-plugin-w32.o   \
@@ -85,10 +87,13 @@ resources/: $(RESOBJ)
 overkill.o: overkill.adb
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
 
-bmp/bmp.a:
-	$(MAKE) -C bmp/
+adabmp/libadabmp.a:
+	$(MAKE) -C adabmp/
 
-bin/overkill.exe: bmp/bmp.a $(OBJ) $(W32OBJ)
+adadft/libadadft.a:
+	$(MAKE) -C adadft/
+
+bin/overkill.exe: adabmp/libadabmp.a $(OBJ) $(W32OBJ)
 	mkdir -p bin
 	mkdir -p obj
 	mkdir -p windows-obj
@@ -97,7 +102,7 @@ bin/overkill.exe: bmp/bmp.a $(OBJ) $(W32OBJ)
 	$(MAKE) windows/
 	$(MAKE) resources/
 	$(GNATBIND) $(ALI) $(W32ALI)
-	$(GNATLINK) $(GNATLINKFLAGS) -o $@ obj/overkill-main.ali bmp/bmp.a obj/check_extension.o
+	$(GNATLINK) $(GNATLINKFLAGS) -o $@ obj/overkill-main.ali adabmp/libadabmp.a obj/check_extension.o
 
 $(DOWNLOADS):
 	$(MAKE) -C downloads
@@ -117,7 +122,8 @@ clean:
 	rm -f windows-obj/*.o windows-obj/*.ali
 	rm -f *.exe *.o *.ali *.adb *.ads
 	rm -f bin/*.exe
-	$(MAKE) -C bmp clean
+	$(MAKE) -C adabmp clean
+	$(MAKE) -C adadft clean
 
 clean-downloads:
 	$(MAKE) -C downloads clean
