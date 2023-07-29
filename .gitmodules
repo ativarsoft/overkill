@@ -1,3 +1,6 @@
 [submodule "bmp"]
 	path = bmp
 	url = https://github.com/ativarsoft/bmp.git
+[submodule "adadft"]
+	path = adadft
+	url = https://github.com/ativarsoft/adadft.git
