@@ -21,7 +21,8 @@ package Overkill.Plugin.W32 is
    
    overriding procedure Load_Output_Plugin
      (Plugin_Manager : in out W32_Plugin_Manager_Type;
-      Library : Library_Type);
+      Library : Library_Type;
+      Selected : Boolean);
    
    overriding procedure Load_General_Plugin
      (Plugin_Manager : in out W32_Plugin_Manager_Type;

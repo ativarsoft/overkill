@@ -3,5 +3,8 @@ all: run
 run:
 	wine overkill.exe
 
-.PHONY: all run
+gdb:
+	i686-w64-mingw32-gdb overkill.exe
+
+.PHONY: all run gdb
 

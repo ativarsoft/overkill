@@ -6,6 +6,7 @@ with Ada.Strings.Unbounded;
 use Ada.Strings.Unbounded;
 with Ada.Directories;
 use Ada.Directories;
+with Ada.Text_IO;
 with Overkill.Plugin;
 use Overkill.Plugin;
 with Overkill.Plugin.Output;
@@ -87,14 +88,26 @@ package body Overkill.Discovery is
       Dsp_Plugin : DSP_Plugin_Module_Type;
       Vis_Plugin : Vis_Plugin_Module_Type;
       Library : Library_Type;
+      Selected : Boolean;
    begin
       if Equal_Case_Insensitive (Filename (Filename'First..Filename'First+2), "in_") then
          Put_Line ("Loading in plugin.");
          Library := Load_Library (Path);
          Plugin_Manager.Load_Input_Plugin (Library);
-      elsif Equal_Case_Insensitive (Filename (Filename'First..Filename'First+4), "out_") then
+      elsif Equal_Case_Insensitive (Filename (Filename'First..Filename'First + 3), "out_") then
          Library := Load_Library (Path);
-         Load_Output_Plugin (Plugin_Manager, Library);
+         if Equal_Case_Insensitive
+            (Filename, To_String (Selected_Out_Module_Filename))
+         then
+            Selected := True;
+            Put_Line
+               ("Selected " &
+                To_String (Selected_Out_Module_Filename) &
+                " as output plugin.");
+         else
+            Selected := False;
+         end if;
+         Load_Output_Plugin (Plugin_Manager, Library, Selected);
       elsif Equal_Case_Insensitive (Filename (Filename'First..Filename'First+4), "gen_") then
          Library := Load_Library (Path);
          Load_General_Plugin (Plugin_Manager, Library);

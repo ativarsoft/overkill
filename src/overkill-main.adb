@@ -1,3 +1,4 @@
+with Overkill.Playback;
 with Overkill.Classic;
 use Overkill.Classic;
 with Overkill.Gui;
@@ -26,6 +27,7 @@ use Overkill.Subsystems;
 procedure Overkill.Main
 is
 begin
+   Overkill.Playback.Initialize;
    Overkill.Gui.gui := w32_gui;
    Overkill.Gui.gui.init.all;
    --Overkill.Gui.Current_Skin := Skin'Access;

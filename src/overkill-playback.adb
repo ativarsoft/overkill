@@ -1,30 +1,51 @@
+with Ada.Containers;
+use Ada.Containers;
 with Ada.Containers.Vectors;
 with Ada.Strings.Unbounded;
 use Ada.Strings.Unbounded;
+with Ada.IO_Exceptions;
+with Ada.Text_IO;
+with Ada.Streams.Stream_IO;
+with Interfaces.C;
+use Interfaces.C;
+with Interfaces.C.Strings;
+use Interfaces.C.Strings;
 with Overkill.Plugin.Input;
 use Overkill.Plugin.Input;
+with Overkill.Plugin.Output;
+use Overkill.Plugin.Output;
 with Overkill.Discovery;
 use Overkill.Discovery;
+with Overkill.Subsystems;
+with System;
+use System;
 
 package body Overkill.Playback is
 
-   type Playlist_Element is record
+   Empty_Playlist     : exception;
+   Invalid_Out_Module : exception;
+
+   Default_Path : constant String := "mateus016-11-2-finished.mp3";
+   Default_Title : constant String := "Mental Asylum";
+   Default_Artist : constant String := "Mateus";
+
+   type Playlist_Entry_Type is record
       Path: Unbounded_String;
       Title: Unbounded_String;
       Artist: Unbounded_String;
    end record;
 
    package Playlist_Vectors is new Ada.Containers.Vectors
-     (Element_Type => Playlist_Element,
-      Index_Type => Natural);
+     (Element_Type => Playlist_Entry_Type,
+      Index_Type => Count_Type);
       
-   type Playlist_Type is record
+   type Playlist_Type is tagged record
       Entries : Playlist_Vectors.Vector;
-      Current_Position : Natural;
+      Current_Position : Count_Type;
    end record;
    
    type Playback_Type is record
-      In_Plugin : Overkill.Plugin.Input.In_Plugin_Type;
+      In_Plugin : Overkill.Plugin.Input.In_Plugin_Access;
    end record;
 
    Playlist : Playlist_Type;
@@ -35,14 +56,68 @@ package body Overkill.Playback is
       if Playlist.Current_Position > 0 then
          Playlist.Current_Position := Playlist.Current_Position - 1;
       else
-         Playlist.Current_Position := Integer (Playlist.Entries.Length);
+         Playlist.Current_Position := Playlist.Entries.Length;
       end if;
       Play;
    end Previous;
-   
-   procedure Play is
+
+   function Get_Current_Entry
+      (Playlist : in out Playlist_Type)
+       return Playlist_Entry_Type
+   is
    begin
-      Playback.In_Plugin.Play.all;
+      if Playlist.Entries.Length = 0 then
+         raise Empty_Playlist;
+      end if;
+      return Playlist.Entries (Playlist.Current_Position);
+   end Get_Current_Entry;
+
+   function Try_To_Open
+      (Filename : String)
+       return Boolean
+   is
+      use Ada.Streams.Stream_IO;
+
+      File : File_Type;
+   begin
+      Open (File, In_File, Filename);
+      Close (File);
+      return True;
+   exception
+      when Ada.IO_Exceptions.Status_Error =>
+         return False;
+   end Try_To_Open;
+   
+   procedure Play
+   is
+      use Ada.Text_IO;
+
+      Current_Entry : Playlist_Entry_Type := Playlist.Get_Current_Entry;
+      Filename : String := To_String (Current_Entry.Path);
+      C_Filename : chars_ptr;
+      R : int;
+   begin
+      if Try_To_Open (Filename) = False then
+         Put_Line ("File not found.");
+         return;
+      else
+         Put_Line ("File found.");
+      end if;
+      Playback.In_Plugin := Overkill.Subsystems.Discovery.Lookup_In_Plugin (Filename);
+      Put_Line ("Playing file.");
+      if Out_Module = Null_Address then
+         raise Invalid_Out_Module;
+      end if;
+      Playback.In_Plugin.Out_Module := Out_Module;
+      C_Filename := New_String (Filename);
+      R := Playback.In_Plugin.Play (C_Filename);
+      Free (C_Filename);
+      if R /= 0 then
+         raise Program_Error with "Playback failed.";
+      end if;
+   exception
+      when Empty_Playlist =>
+         Put_Line ("Playlist is empty.");
    end Play;
    
    procedure Pause is
@@ -76,16 +151,44 @@ package body Overkill.Playback is
    end Lookup_In_Plugin;
 
    function New_Playback
-      (Filename : String;
-       Discovery : Discovery_Type)
-       return Playback_Type
+      return Playback_Type
    is
-      --  In_Plugin : In_Plugin_Type := Lookup_In_Plugin (Discovery, Filename);
-      In_Plugin : In_Plugin_Type;
+      In_Plugin : In_Plugin_Access := null;
       Playback : constant Playback_Type :=
          (In_Plugin => In_Plugin);
    begin
       return Playback;
    end New_Playback;
+
+   function New_Playlist
+      return Playlist_Type
+   is
+
+      Path_Unbounded : Unbounded_String :=
+         To_Unbounded_String (Default_Path);
+      Title_Unbounded : Unbounded_String :=
+         To_Unbounded_String (Default_Title);
+      Artist_Unbounded : Unbounded_String :=
+         To_Unbounded_String (Default_Artist);
+
+      Default_Playlist_Entry : constant Playlist_Entry_Type :=
+         (Path   => Path_Unbounded,
+          Title  => Title_Unbounded,
+          Artist => Artist_Unbounded);
+
+      Playlist : Playlist_Type;
+
+   begin
+      Playlist.Entries.Append (Default_Playlist_Entry);
+      Playlist.Current_Position := 0;
+      return Playlist;
+   end New_Playlist;
+
+   procedure Initialize
+   is
+   begin
+      Playback := New_Playback;
+      Playlist := New_Playlist;
+   end Initialize;
 
 end Overkill.Playback;

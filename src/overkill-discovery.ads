@@ -1,6 +1,8 @@
 with Overkill.Plugin.Input;
 use Overkill.Plugin.Input;
 with Ada.Finalization;
+with Ada.Strings.Unbounded;
+use Ada.Strings.Unbounded;
 
 package Overkill.Discovery is
 
@@ -18,5 +20,8 @@ package Overkill.Discovery is
       (Discovery : in out Discovery_Type;
        Filename : String)
        return In_Plugin_Access;
+
+   Selected_Out_Module_Filename : Unbounded_String :=
+      To_Unbounded_String ("OUT_WAVE.DLL");
 
 end Overkill.Discovery;

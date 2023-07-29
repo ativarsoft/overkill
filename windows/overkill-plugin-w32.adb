@@ -9,12 +9,24 @@ with Overkill.Plugin.Input;
 use Overkill.Plugin.Input;
 with Overkill.Plugin.Output;
 use Overkill.Plugin.Output;
+with Ada.Text_IO;
+with Ada.Directories;
+with Ada.Characters.Handling;
 with System;
 
 package body Overkill.Plugin.W32 is
 
    type Get_In_Module_Type is access function return In_Plugin_Access;
-   type Get_Out_Module_Type is access function return Out_Plugin_Type;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Get_In_Module_Type);
+
+   type Get_Out_Module_Type is access function return Out_Plugin_Access;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Get_Out_Module_Type);
    
    type DWORD is new Interfaces.C.unsigned;
    
@@ -64,14 +76,27 @@ package body Overkill.Plugin.W32 is
       end if;
       return Get_Out_Module;
    end Get_Out_Symbol;
-   
+
+   procedure Sa_Vsa_Init
+      (latency : int; rate : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Vsa_Init);
+
    procedure Sa_Vsa_Init
      (latency : int; rate : int)
    is
    begin
       null;
    end Sa_Vsa_Init;
-   
+
+   procedure Sa_Vsa_Deinit;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Vsa_Deinit);
+
    procedure Sa_Vsa_Deinit
    is
    begin
@@ -82,12 +107,29 @@ package body Overkill.Plugin.W32 is
      (pcm_data : Pcm_Data_Type;
       Num_Channels : int;
       Bps : int;
+      Time : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Add_Pcm_Data);
+
+   procedure Sa_Add_Pcm_Data
+     (pcm_data : Pcm_Data_Type;
+      Num_Channels : int;
+      Bps : int;
       Time : int)
    is
    begin
       null;
    end Sa_Add_Pcm_Data;
-   
+
+   function Sa_Get_Mode
+     return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Get_Mode);
+
    function Sa_Get_Mode
      return int
    is
@@ -99,12 +141,32 @@ package body Overkill.Plugin.W32 is
      (data : Pcm_Data_Type;
       Time : int;
       T : int)
+      return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Add);
+
+   function Sa_Add
+     (data : Pcm_Data_Type;
+      Time : int;
+      T : int)
       return int
    is
    begin
       return 0;
    end Sa_Add;
-   
+
+   procedure Vsa_Add_Pcm_Data
+     (A : access Null_Record;
+      B : int;
+      C : int;
+      D : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Add_Pcm_Data);
+
    procedure Vsa_Add_Pcm_Data
      (A : access Null_Record;
       B : int;
@@ -118,12 +180,30 @@ package body Overkill.Plugin.W32 is
    function Vsa_Get_Mode
      (A : int;
       B : int)
+      return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Get_Mode);
+
+   function Vsa_Get_Mode
+     (A : int;
+      B : int)
       return int
    is
    begin
       return 0;
    end Vsa_Get_Mode;
-   
+
+   function Vsa_Add
+     (A : access Null_Record;
+      B : int)
+      return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Add);
+
    function Vsa_Add
      (A : access Null_Record;
       B : int)
@@ -135,12 +215,27 @@ package body Overkill.Plugin.W32 is
    
    procedure Vsa_Set_Info
      (A : int;
+      B : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Set_Info);
+
+   procedure Vsa_Set_Info
+     (A : int;
       B : int)
    is
    begin
       null;
    end Vsa_Set_Info;
    
+   function Dsp_Is_Active
+     return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Dsp_Is_Active);
+
    function Dsp_Is_Active
      return int
    is
@@ -154,12 +249,31 @@ package body Overkill.Plugin.W32 is
       Bits : int;
       Channels : int;
       Rate : int)
+      return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Do_Samples);
+
+   function Do_Samples
+     (Samples : Pcm_Data_Type;
+      Num : int;
+      Bits : int;
+      Channels : int;
+      Rate : int)
       return int
    is
    begin
       return 576;
    end Do_Samples;
    
+   procedure Set_Info
+     (A, B, C, D : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Set_Info);
+
    procedure Set_Info
      (A, B, C, D : int)
    is
@@ -206,9 +320,10 @@ package body Overkill.Plugin.W32 is
    
    procedure Load_Output_Plugin
      (Plugin_Manager : in out W32_Plugin_Manager_Type;
-      Library : Library_Type)
+      Library : Library_Type;
+      Selected : Boolean)
    is
-      Out_Module : Out_Plugin_Type;
+      Out_Module : Out_Plugin_Access;
       Get_Out_Module : Get_Out_Module_Type;
    begin
       Get_Out_Module := Get_Out_Symbol (Library, "winampGetOutModule");
@@ -225,6 +340,9 @@ package body Overkill.Plugin.W32 is
       Out_Module.Set_Panning(0);
       
       Put_Line ("Description: " & To_Ada (Value (Out_Module.Description)));
+
+      Overkill.Plugin.Output.Out_Module :=
+         Out_Module.all'Address;
    end Load_Output_Plugin;
    
    procedure Load_General_Plugin
@@ -264,17 +382,54 @@ package body Overkill.Plugin.W32 is
        Filename : String)
        return In_Plugin_Access
    is
+      use Ada.Characters.Handling;
+      use Ada.Directories;
+      use Ada.Text_IO;
       use In_Plugin_Vectors;
 
-      C_Filename : chars_ptr;
+      Filename_Extension : String := Extension (To_Lower (Filename));
+
+      C_Filename, C_Filename_Extension : chars_ptr;
+
+      function Check_Extension (Extensions : chars_ptr; Filename_Extension : chars_ptr)
+         return int;
+      pragma Import
+         (Convention => C,
+          Entity => Check_Extension,
+          External_Name => "check_extension");
    begin
-      for I in 1 .. Plugin_Manager.V.Length loop
+      Put ("Trying to play ");
+      Put (Filename);
+      Put (".");
+      New_Line;
+
+      Put (Plugin_Manager.V.Length'Image);
+      Put (" plugins found.");
+      New_Line;
+
+      for I in 0 .. Plugin_Manager.V.Length - 1 loop
+         Put ("Trying input plugin #");
+         Put (I'Image);
+         New_Line;
+
          C_Filename := New_String (Filename);
+
          if Plugin_Manager.V (I).Is_Our_File (C_Filename) /= 0 then
             Free (C_Filename);
             return Plugin_Manager.V (I);
          end if;
+
+         C_Filename_Extension := New_String (Filename_Extension);
+         if Check_Extension
+            (Plugin_Manager.V (I).File_Ext, C_Filename_Extension) = 0
+         then
+            Free (C_Filename);
+            Free (C_Filename_Extension);
+            return Plugin_Manager.V (I);
+         end if;
+
          Free (C_Filename);
+         Free (C_Filename_Extension);
       end loop;
       raise Program_Error with "Unknown file format.";
    end Lookup_In_Plugin;

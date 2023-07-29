@@ -20,7 +20,8 @@ package Overkill.Plugin is
 
    procedure Load_Output_Plugin
      (Plugin_Manager : in out Plugin_Manager_Type;
-      Library : Library_Type)
+      Library : Library_Type;
+      Selected : Boolean)
    is abstract;
    
    procedure Load_General_Plugin

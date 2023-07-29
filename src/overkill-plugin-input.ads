@@ -6,6 +6,7 @@ with Interfaces.C;
 use Interfaces.C;
 with Interfaces.C.Strings;
 use Interfaces.C.Strings;
+with System;
 
 package Overkill.Plugin.Input is
 
@@ -18,7 +19,7 @@ package Overkill.Plugin.Input is
    type Get_File_Info_Type is access procedure;
    type Info_Box_Type is access procedure;
    type Is_Our_File_Type is access function (Filename : chars_ptr) return int;
-   type Play_Type is access procedure;
+   type Play_Type is access function (Filename : chars_ptr) return int;
    type Pause_Type is access procedure;
    type Unpause_Type is access procedure;
    type Is_Paused_Type is access procedure;
@@ -30,20 +31,90 @@ package Overkill.Plugin.Input is
    type Set_Panning_Type is access procedure;
    -- Video Spectrum analyser
    type Sa_Vsa_Init_Type is access procedure (latency : int; rate : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Vsa_Init_Type);
+
    type Sa_Vsa_Deinit_Type is access procedure;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Vsa_Deinit_Type);
+
    type Sa_Add_Pcm_Data_Type is access procedure (pcm_data : Pcm_Data_Type; Num_Channels : int; Bps : int; Time : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Add_Pcm_Data_Type);
+
    type Sa_Get_Mode_Type is access function return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Get_Mode_Type);
+
    type Sa_Add_Type is access function (data : Pcm_Data_Type; Time : int; T : int) return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Sa_Add_Type);
+
    type Vsa_Add_Pcm_Data_Type is access procedure (A : access Null_Record; B : int; C : int; D : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Add_Pcm_Data_Type);
+
    type Vsa_Get_Mode_Type is access function (A : int; B : int) return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Get_Mode_Type);
+
    type Vsa_Add_Type is access function (A : access Null_Record; B : int) return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Add_Type);
+
    type Vsa_Set_Info_Type is access procedure (A : int; B : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Vsa_Set_Info_Type);
+
    type Dsp_Is_Active_Type is access function return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Dsp_Is_Active_Type);
+
    type Do_Samples_Type is access function (Samples : Pcm_Data_Type; Num : int; Bits : int; Channels : int; Rate : int) return int;
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Do_Samples_Type);
+
+   --
    -- Equalizer
+   --
    type Eq_Set_Type is access procedure (A : int; B : access String; C : int);
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Eq_Set_Type);
+
    type Set_Info_Type is access procedure (A, B, C, D : int);
-   
+
+   pragma Convention
+      (Convention => Stdcall,
+       Entity => Set_Info_Type);
+
+   --
+   --  Module type
+   --
+
    type In_Plugin_Type is record
       Version : int; -- out
       Description : chars_ptr; -- out
@@ -85,7 +156,7 @@ package Overkill.Plugin.Input is
       Eq_Set : Eq_Set_Type;
       Set_Info : Set_Info_Type;
       --  Output plugin module
-      Out_Plugin : Overkill.Plugin.Output.Out_Plugin_Type;
+      Out_Module : System.Address;
    end record;
 
    type In_Plugin_Access is access all In_Plugin_Type;

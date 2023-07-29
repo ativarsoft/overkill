@@ -1,6 +1,7 @@
 # Copyright (C) 2023 Mateus de Lima Oliveira
 
 MAKE=make -j1
+CC=i686-w64-mingw32-gcc
 GNAT=i686-w64-mingw32-gcc
 GNATFLAGS=-Isrc -Iwindows -Iresources -Ibmp/src
 GNATBIND=i686-w64-mingw32-gnatbind
@@ -24,6 +25,7 @@ OBJ=obj/overkill-main.o         \
   obj/overkill-plugin-common.o  \
   obj/overkill-interfaces.o     \
   obj/overkill-subsystems.o     \
+  obj/check_extension.o         \
   bmp/bmp.a
 
 ALI=obj/overkill-main.ali        \
@@ -58,6 +60,10 @@ DOWNLOADS=downloads/winamp200.exe
 
 all: bin/overkill.exe $(DOWNLOADS)
 
+obj/%.o: src/%.c
+	mkdir -p obj
+	$(CC) $(CFLAGS) -c -o $@ $<
+
 obj/%.o: src/%.adb
 	mkdir -p obj
 	$(GNAT) $(GNATFLAGS) -c -o $@ $<
@@ -91,7 +97,7 @@ bin/overkill.exe: bmp/bmp.a $(OBJ) $(W32OBJ)
 	$(MAKE) windows/
 	$(MAKE) resources/
 	$(GNATBIND) $(ALI) $(W32ALI)
-	$(GNATLINK) $(GNATLINKFLAGS) -o $@ obj/overkill-main.ali bmp/bmp.a
+	$(GNATLINK) $(GNATLINKFLAGS) -o $@ obj/overkill-main.ali bmp/bmp.a obj/check_extension.o
 
 $(DOWNLOADS):
 	$(MAKE) -C downloads
@@ -118,6 +124,9 @@ clean-downloads:
 
 run:
 	$(MAKE) -C bin run
+
+gdb:
+	$(MAKE) -C bin gdb
 
 .PHONY: clean test run
 

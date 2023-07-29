@@ -6,6 +6,7 @@ with Overkill.Platform;
 use Overkill.Platform;
 with Overkill.Plugin.Common;
 use Overkill.Plugin.Common;
+with System;
 
 package Overkill.Plugin.Output is
 
@@ -64,6 +65,8 @@ package Overkill.Plugin.Output is
       Get_Written_Time : Get_Written_Time_Type;
    end record;
 
-   Out_Plugin : Out_Plugin_Type;
+   type Out_Plugin_Access is access all Out_Plugin_Type;
+
+   Out_Module : System.Address;
 
 end Overkill.Plugin.Output;
